@@ -17,6 +17,8 @@ import { PETAL_N, respawnPetal } from '../render/effects/petals.js';
 import { pick } from '../utils/random.js';
 import { localPoint, offsetDir, randTangent, randomDir, tangentToward } from '../utils/sphere.js';
 import { gate } from '../world/SealedGate.js';
+import { createChests } from '../world/chests.js';
+import { createDoors } from '../world/houses.js';
 import { findSpot, occupy, spotNear } from '../world/colliders.js';
 import { critters, npcs } from '../world/entities.js';
 import { GARDENS, GARDEN_R, HILLS, PONDS, SPAWN, SPAWN_FWD } from '../world/layout.js';
@@ -84,8 +86,14 @@ function spawnWorld() {
   }
 
   npcs.push(gate);   // the gate answers E and ticks along with the other fixtures
-
   for (let i = 0; i < PETAL_N; i++) respawnPetal(i, true);
+
+  // Last of all, and from their own streams, so nothing above is disturbed.
+  createChests(npcs);
+  createDoors(npcs, [
+    { roomId: 'teahouse', dir: TEA_DIR, fwd: TEA_FWD, label: 'the tea house' },
+    { roomId: 'pagodaRoom', dir: PAGODA_DIR, label: 'the pagoda' },
+  ]);
 }
 
 export { addNPC, spawnWorld };

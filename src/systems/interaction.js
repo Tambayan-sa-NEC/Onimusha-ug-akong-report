@@ -28,6 +28,11 @@ function updateInteraction(dt) {
   }
   if (session.started && !ch.active) for (const n of npcs) {
     if (n.def.game) continue;
+    if (n.isChest) {   // chests have a shorter reach than a conversation
+      const d = n.b.dist(P);
+      if (d < CFG.talkRange - 0.8 && d < bd) { bd = d; near = n; }
+      continue;
+    }
     const d = n.b.dist(P);
     if (d < CFG.talkRange && d < bd) { bd = d; near = n; }
   }

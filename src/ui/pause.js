@@ -5,8 +5,10 @@
  * systems that own it; nothing here reaches into the world directly.
  */
 import { abandonChallenge, ch, el, forfeitChallenge } from '../challenges/system.js';
+import { leaveRoom } from '../world/houses.js';
 import { BINDS, DEFAULT_BINDS, bindConflict, rebind, resetBinds } from '../config/keys.js';
 import { CFG, DEFAULT_SETTINGS } from '../config/settings.js';
+import { collection } from '../core/keepsakes.js';
 import { loadPrefs, savePrefs } from '../core/save.js';
 import { session } from '../core/Session.js';
 import { Sound } from '../systems/audio.js';
@@ -53,6 +55,7 @@ function renderRoot(box) {
   button(box, 'Resume', 'pbtn primary', closePause);
   button(box, 'Settings', 'pbtn', () => show('settings'));
   button(box, 'Controls', 'pbtn', () => show('keys'));
+  button(box, 'Keepsakes', 'pbtn', () => show('items'));
   // Only offered when there is something to bow out of.
   if (ch.active && !ch.active.done) {
     button(box, 'Forfeit challenge', 'pbtn', () => { forfeitChallenge(); closePause(); });
@@ -142,6 +145,23 @@ function renderKeys(box) {
   button(box, 'Back', 'pbtn', () => { pause.listening = null; back(); });
 }
 
+/** What has been found, and the shape of what has not. */
+function renderItems(box) {
+  const all = collection();
+  const have = all.filter(i => i.held).length;
+  el('h2', undefined, 'Keepsakes', box);
+  el('p', 'phint', `${have} of ${all.length} found — left in chests around the planet.`, box);
+  const grid = el('div', 'pitems', undefined, box);
+  for (const item of all) {
+    const cell = el('div', item.held ? 'pitem found' : 'pitem', undefined, grid);
+    el('div', 'piseal', item.held ? item.seal : '?', cell);
+    el('div', 'piname', item.held ? item.name : '— — —', cell);
+    if (item.held) el('div', 'piline', item.line, cell);
+    cell.title = item.held ? item.line : 'Not found yet';
+  }
+  button(box, 'Back', 'pbtn', back);
+}
+
 /** Draw whichever page is current. */
 function show(page) {
   pause.page = page;
@@ -150,6 +170,7 @@ function show(page) {
   const card = el('div', 'pcard', undefined, box);
   if (page === 'settings') renderSettings(card);
   else if (page === 'keys') renderKeys(card);
+  else if (page === 'items') renderItems(card);
   else if (page === 'quit') renderQuit(card);
   else renderRoot(card);
 }
@@ -191,6 +212,7 @@ const togglePause = () => (pause.open ? closePause() : openPause());
 /** Leave the run entirely. Anything still running is torn down first. */
 function quitToMenu() {
   abandonChallenge();     // toMenu refuses while a challenge is live
+  leaveRoom();            // and the planet has to be back before the menu is
   closePause();
   toMenu();
 }

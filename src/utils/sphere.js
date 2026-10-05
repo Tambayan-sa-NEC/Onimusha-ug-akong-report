@@ -29,9 +29,9 @@ function offsetDir(c, ang, dist, out = new V3()) {
   return out.copy(c).multiplyScalar(Math.cos(dist))
     .addScaledVector(TB_U, Math.cos(ang) * s).addScaledVector(TB_V, Math.sin(ang) * s).normalize();
 }
-function randTangent(d) {
+function randTangent(d, rng = rand) {
   tangentBasis(d, TB_U, TB_V);
-  const a = rand() * Math.PI * 2;
+  const a = rng() * Math.PI * 2;
   return new V3().copy(TB_U).multiplyScalar(Math.cos(a)).addScaledVector(TB_V, Math.sin(a));
 }
 /** Signed angle from a to b around axis n. */

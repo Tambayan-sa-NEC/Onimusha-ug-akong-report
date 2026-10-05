@@ -89,6 +89,8 @@ function saveProgress(progress) {
     won: [...progress.won],
     bossWon: [...progress.bossWon],
     slain: [...progress.slain],
+    held: [...(progress.held || [])],
+    opened: [...(progress.opened || [])],
   };
   const settings = {};
   for (const key of Object.keys(DEFAULT_SETTINGS)) settings[key] = CFG[key];
@@ -106,9 +108,12 @@ function loadProgress() {
   const p = data && data.progress;
   if (!p || typeof p.char !== 'string' || !CHARACTERS[p.char]) return null;
   const list = v => (Array.isArray(v) ? v.filter(x => typeof x === 'string') : []);
-  const progress = { char: p.char, won: list(p.won), bossWon: list(p.bossWon), slain: list(p.slain) };
-  // Nothing won yet is not a run worth continuing.
-  if (!progress.won.length && !progress.bossWon.length) return null;
+  const progress = {
+    char: p.char, won: list(p.won), bossWon: list(p.bossWon), slain: list(p.slain),
+    held: list(p.held), opened: list(p.opened),
+  };
+  // Nothing found and nothing won is not a run worth continuing.
+  if (!progress.won.length && !progress.bossWon.length && !progress.held.length) return null;
   return progress;
 }
 const hasProgress = () => loadProgress() !== null;

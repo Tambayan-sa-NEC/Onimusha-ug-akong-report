@@ -10,6 +10,7 @@ import { buildSeals } from '../challenges/seals.js';
 import { clearKunai } from '../combat/kunai.js';
 import { CHARACTERS } from '../config/characters.js';
 import { last } from '../core/GameLoop.js';
+import { clearKeepsakes, held, opened, takeItem } from '../core/keepsakes.js';
 import { hasProgress, loadProgress, saveProgress } from '../core/save.js';
 import { session } from '../core/Session.js';
 import { setCharacter, setWolf, player } from '../entities/Player.js';
@@ -17,6 +18,7 @@ import { beacon } from '../render/effects/rings.js';
 import { Sound } from '../systems/audio.js';
 import { HUNT, endHunt, hunter } from '../systems/hunting.js';
 import { clearInput } from '../systems/input.js';
+import { resetChests } from '../world/chests.js';
 import { clearPreviews, createPreview } from './charPreview.js';
 import { clearPrompt, closeDialog } from './dialog.js';
 import { openFromTitle } from './pause.js';
@@ -175,9 +177,13 @@ function continueRun() {
   const saved = loadProgress();
   if (!saved) return false;
   won.clear(); bossWon.clear(); slain.clear();
+  clearKeepsakes();
   for (const k of saved.won) won.add(k);
   for (const k of saved.bossWon) bossWon.add(k);
   for (const k of saved.slain) slain.add(k);
+  for (const k of saved.held || []) takeItem(k);
+  for (const k of saved.opened || []) opened.add(k);
+  resetChests();                       // lids match what was already opened
   buildSeals();
   start(saved.char);
   return true;
@@ -186,7 +192,7 @@ function continueRun() {
 /** Write down where the run has got to. Cheap, and only ever loses the last seal. */
 function recordProgress() {
   if (!player.char) return;
-  saveProgress({ char: player.char.id, won, bossWon, slain });
+  saveProgress({ char: player.char.id, won, bossWon, slain, held, opened });
 }
 
 /** Step back to the opening screens, leaving nothing of this character behind. */

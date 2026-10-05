@@ -6,6 +6,11 @@ import { equipWeapon } from '../combat/katana.js';
 import { startLoop } from './GameLoop.js';
 import { spawnWorld } from '../systems/spawn.js';
 import { buildMenu } from '../ui/characterSelect.js';
+import { held, opened } from './keepsakes.js';
+import { saveProgress } from './save.js';
+import { bossWon, slain, won } from '../challenges/system.js';
+import { player } from '../entities/Player.js';
+import { setChestListener } from '../world/chests.js';
 import { initHud } from '../ui/hud.js';
 import { initPause } from '../ui/pause.js';
 import { arena } from '../world/Arena.js';
@@ -32,6 +37,10 @@ function startGame() {
   buildMenu();        // the character select screen, up before the first frame
   initPause();        // restore saved settings and keybinds before anything reads them
   initHud();          // vitals, the seal book, the fading controls card
+  // Finding something is progress too, so a chest writes the run down as a win does.
+  setChestListener(() => {
+    if (player.char) saveProgress({ char: player.char.id, won, bossWon, slain, held, opened });
+  });
   void arena;          // the arena system is wired in by the gate
   startLoop();
 }

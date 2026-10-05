@@ -5,7 +5,9 @@
  */
 import { marsh } from './marsh.js';
 import { peak } from './peak.js';
+import { pagodaRoom, teahouse } from './rooms.js';
 
-const ARENAS = { peak, marsh };
+/** Boss arenas and walk-in rooms alike: both are places the planet is swapped for. */
+const ARENAS = { peak, marsh, teahouse, pagodaRoom };
 
 export { ARENAS };
