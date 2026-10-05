@@ -8,6 +8,20 @@ gate on the far hill, and two great yokai are waiting behind it — each fought 
 sealed arena of its own. Fell them both and the journey is told back as an ending
 cutscene, brushed in sumi-e ink.
 
+## Screenshots
+
+![The planet, the rōnin, and the wolf that walks with him](docs/screenshots/planet.png)
+
+Everything above is built from flat-shaded primitives in code — there are no art assets
+in this repository.
+
+| | |
+|---|---|
+| ![Title card and character select](docs/screenshots/title.png) | ![Talking to a villager](docs/screenshots/dialogue.png) |
+| Pick the rōnin or the kunoichi — a blade and five hearts, or a kunai and quick feet. | The villagers have something to say, typed out a letter at a time. |
+| ![An Onibi mini-game underway](docs/screenshots/challenge.png) | ![A battle with a yokai](docs/screenshots/battle.png) |
+| Ten mini-games. This one wants six lost wisps gathered inside thirty-five seconds. | Or refuse the game and settle it with the blade. Either way the seal is yours. |
+
 ## Running it
 
 ```bash
