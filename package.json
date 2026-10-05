@@ -1,0 +1,14 @@
+{
+  "name": "onimusha",
+  "version": "1.0.0",
+  "description": "A tiny planet of samurai, sakura, sleepy cats and yokai, rendered with three.js.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --experimental-vm-modules tests/run.js"
+  },
+  "devDependencies": {
+    "three": "0.128.0"
+  }
+}

@@ -1,0 +1,131 @@
+/**
+ * Who the villagers are and what they say.
+ */
+import { oniAnim } from '../entities/NPC.js';
+
+// Lines are [text, action?, emote?]. Actions: bow, hop, spin, wave, meditate, dance, vanish.
+const SHARED_LINES = [
+  ['Petals drifting down —\nthe path forgets where it went,\nbut my feet remember.', 'bow', '♪'],
+  ['A frog on a stone\nconsiders the whole wide pond\nand decides to nap.', null, '♪'],
+  ['Fall seven times, stand up eight. Or sit down and have tea. Both are fine.', 'bow'],
+  ['Even monkeys fall from trees. Be gentle with yourself today.', null, '心'],
+  ['Walk all the way around the planet sometime. It takes less time than a cup of tea.', 'wave'],
+  ['Morning mist lingers\non the roof of the pagoda —\na cat yawns, then sleeps.', null, '♪'],
+  ['Have you tried the dango? Oh, wait. There is no shop. I simply dream of dango.', 'hop', '?'],
+  ['The wind is in a good mood. Can you hear it in the bamboo?', 'wave'],
+];
+const NPC_DEFS = [
+  { id: 'kenji', name: 'Kenji the Ronin', seal: '侍',
+    look: { top: '#3d4f73', bottom: '#2c2f3d', sash: '#c9b27a', hair: 'topknot', hakama: true, katana: true },
+    lines: [
+      ['A sword is heaviest when you carry anger. Today, mine feels light.', 'bow', '礼'],
+      ['I once chased glory across three provinces. Now I chase the sunset around this little world.'],
+      ['Walk slowly, friend. The planet is small, but there is no hurry.', 'wave'],
+      ['Watch closely — hah! ...I missed the falling petal. Again.', 'spin', '斬!'],
+      ['The way of the warrior begins with sweeping your own doorstep.', 'bow'],
+      ['Hmph. My stance is perfect. Do not tell anyone the cat startled me earlier.', 'hop', '!'],
+    ] },
+  { id: 'hanako', name: 'Hanako, Tea Master', seal: '茶',
+    look: { top: '#8a6fae', sash: '#e8c35e', hair: 'bun', robe: true },
+    lines: [
+      ['Ichi-go ichi-e. This moment, this cup, will never come again.', 'bow', '茶'],
+      ['Sit a while. The kettle is almost singing.', 'meditate'],
+      ['Turn the bowl twice before you drink. It shows the guest its best face.', 'wave'],
+      ['Matcha should be whisked until it foams like morning mist.', null, '茶'],
+      ['Sweets first, tea second. The bitterness tastes kinder that way.', 'bow'],
+      ['A samurai in my tea house? Leave the sword by the door, please. ...Thank you.', 'bow', '礼'],
+    ] },
+  { id: 'daisuke', name: 'Monk Daisuke', seal: '禅',
+    look: { top: '#d88a3c', sash: '#8a5530', hair: 'bald', robe: true, skin: '#e8b98f' },
+    lines: [
+      ['Breathe in... breathe out. Congratulations. You did it perfectly.', 'meditate', '禅'],
+      ['The pond does not try to be still. It simply stops being stirred.'],
+      ['I have raked this garden ten thousand times. The cats always win. I am at peace with the cats.', 'bow'],
+      ['Empty your cup, so that it may be filled.', 'bow', '心'],
+      ['Ha! You thought I was asleep. I was merely... meditating very deeply.', 'hop', '!'],
+      ['Even a planet this small has room for a large heart.', null, '心'],
+    ] },
+  { id: 'taro', name: 'Farmer Taro', seal: '米', wander: 0.12,
+    look: { top: '#7d8c5b', bottom: '#5c4c3b', sash: '#3f3a30', hair: 'short', hat: 'kasa' },
+    lines: [
+      ['Rice grows best when you talk to it. I tell it jokes. It never laughs.', 'wave'],
+      ['Rain yesterday, sun today. The fields do not complain, so why should I?'],
+      ['Have you seen a shiba run off with a daikon radish? Asking for a friend.', 'hop', '?'],
+      ['Plant in spring, harvest in autumn, nap in between.', 'meditate'],
+      ['Hard work and a warm bowl of miso. That is the whole secret.', 'bow'],
+      ['Walk around the planet and you end up right back here. Most roads are like that.'],
+    ] },
+  { id: 'yuki', name: 'Yuki the Maiko', seal: '舞', wander: 0.08,
+    look: { top: '#c8423a', sash: '#f1cf6a', hair: 'bun', robe: true, skin: '#fbece2' },
+    lines: [
+      ['Each step in these sandals is a little dance.', 'dance', '♪'],
+      ['The sakura bloom for only a short time. That is why we stop to look.', 'bow', '♪'],
+      ['Would you like to see the fan dance? ...Imagine the fan. I left it at home.', 'spin'],
+      ['Maa, what a polite traveler you are!', 'bow', '礼'],
+      ['The koi are named after the seasons. The orange one is Autumn.', 'wave'],
+      ['Music is just silence that decided to be friendly.', 'dance', '♪'],
+    ] },
+  { id: 'kage', name: 'Kage the Ninja', seal: '忍', wander: 0.15,
+    look: { top: '#2a2a33', bottom: '#2a2a33', sash: '#4a4a5a', hair: 'hood', katana: true },
+    lines: [
+      ['You did not see me. I was never here.', 'vanish'],
+      ['A ninja\'s greatest weapon is patience. And snacks.', null, '…'],
+      ['Shh! I am disguised as a stone lantern. ...Is it working?', 'hop', '?'],
+      ['Smoke bomb! ...Wait. It is still in my pocket. Poof, then.', 'vanish'],
+      ['I trained for years to walk without a sound. The cats still hear me.'],
+      ['I am not hiding from you. I am hiding from my mother.', 'vanish'],
+    ] },
+  { id: 'goro', name: 'Old Goro the Fisherman', seal: '魚',
+    look: { top: '#5d7d98', bottom: '#3e4a55', sash: '#c9b27a', hair: 'short', hat: 'kasa', hairColor: '#9a9a9a' },
+    lines: [
+      ['The koi are not for catching. I just like to watch them think.'],
+      ['Patience is a fishing line with no hook at the end.', 'meditate'],
+      ['The pond reflects the sky. Look down and you can watch the clouds swim.', null, '~'],
+      ['Big one got away! It was about... this big.', 'wave', '!'],
+      ['Forty years at this pond, and the fish still pretend not to know me.', 'bow'],
+      ['When the water is calm, so am I. When it ripples... I am still calm. Mostly.', 'bow'],
+    ] },
+  // ----- Humanoid yokai: each offers a challenge instead of small talk -----
+  { id: 'kappa', name: 'Pond Kappa', game: 'sumo', aggro: true, battle: { hp: 10, moves: ['slam', 'dash'] },
+    look: { top: '#6fa35a', bottom: '#6fa35a', skin: '#7fb466', sash: '#5c8a4a', collar: '#d9d27a', shell: '#6b5a3a', hair: 'kappa', scale: 0.72 },
+    intro: ['Kyuu! A samurai! Kappa sumo, right here, right now!', 'Wrestle me! The loser brings cucumbers.'],
+    win: ['Kyuu... pushed out. You are strong, and very polite. Take my seal!', 'I lost, but my dish is still mostly full. The seal is yours.'],
+    lose: ['Kyuu-kyuu! Kappa sumo champion! Bring cucumbers next time.'] },
+  { id: 'akaoni', name: 'Aka-oni', game: 'iai', aggro: true, battle: { hp: 14, radius: 3, windup: 0.9, moves: ['slam', 'dash'] },
+    look: { top: '#d9533f', bottom: '#e3a33a', skin: '#d9533f', collar: '#d9533f', sash: '#2a2626', hair: 'short', horns: '#f3e7c9', fangs: true, tiger: true, club: true, scale: 1.3 },
+    intro: ['GRAAH! A samurai! Face me in a quick-draw duel!', 'They say your blade is fast. My club is faster. Prove me wrong!'],
+    win: ['Hmph! You are fast, little one. Aka-oni respects you. Take my seal.'],
+    lose: ['GWAHAHA! Too slow! Come back when your hand is quicker.'],
+    anim: oniAnim },
+  { id: 'aooni', name: 'Ao-oni', game: 'stomp', aggro: true, battle: { hp: 14, radius: 3.2, windup: 0.85, rest: 0.9, moves: ['slam', 'slam', 'dash'] },
+    look: { top: '#4f7fc4', bottom: '#e3a33a', skin: '#4f7fc4', collar: '#4f7fc4', sash: '#2a2626', hair: 'short', horns: '#f3e7c9', fangs: true, tiger: true, club: true, scale: 1.3 },
+    intro: ['Hohoho! Let us see you dance around my club!', 'The ground shakes when Ao-oni plays. Jump, little samurai!'],
+    win: ['Hoho! Light on your feet! Here, my seal.'],
+    lose: ['Hohoho! Flat as a rice cracker! Again sometime.'],
+    anim: oniAnim },
+  { id: 'tengu', name: 'Tengu of the Peak', game: 'race', aggro: true, battle: { hp: 10, speed: 3.4, windup: 0.6, moves: ['dash', 'dash', 'slam'] },
+    look: { top: '#efe9dc', bottom: '#e2dccd', sash: '#c8423a', skin: '#d24a3a', collar: '#efe9dc', hair: 'short', hairColor: '#f2f2f2', nose: '#d24a3a', wings: '#2a2a33', hat: 'tokin' },
+    intro: ['Ha! You walk like a turtle. Race me across the planet!', 'A tengu flies faster than the wind. Can your feet keep up?'],
+    win: ['Hmph. Not bad for someone without wings. My seal is yours.'],
+    lose: ['Too slow! The mountain wind laughs at you.'],
+    anim(n, dt, t) { n.h.wings.forEach((w, i) => { w.rotation.y = (i ? 1 : -1) * (0.5 + Math.sin(t * 3) * 0.25); }); } },
+  { id: 'rokurokubi', name: 'Rokurokubi', game: 'riddle',
+    look: { top: '#9fb3cf', sash: '#6a4a8a', hair: 'bun', robe: true, skin: '#f7ede4', neck: true },
+    intro: ['Ohoho... answer my riddles, and please do not stare at my neck.', 'My neck grows longer with every question. Shall we begin?'],
+    win: ['Clever! My neck bows to you. Well, most of it. Take my seal.'],
+    lose: ['Ohoho... study a little more, traveler.'],
+    anim(n, dt, t) {   // the neck stretches lazily, and shoots up when a riddle is asked
+      n.stretch = Math.max(0, (n.stretch || 0) - dt * 0.5);
+      const s = 0.2 + 0.2 * Math.sin(t * 0.7) + n.stretch * 0.9;
+      n.h.head.position.y = 0.9 + s;
+      n.h.neck.position.y = 0.72 + s / 2;
+      n.h.neck.scale.y = 0.2 + s;
+    } },
+  { id: 'tanuki', name: 'Tanuki', game: 'shell',
+    look: { top: '#8a6a4a', bottom: '#6a5038', skin: '#8a6a4a', collar: '#8a6a4a', sash: '#8a6a4a', hair: 'none', belly: '#e9dcc4', ears: '#6a5038', mask: '#4a3a2e', tail: '#6a5038', leaf: true, scale: 0.72 },
+    intro: ['Pon pon! I am a master of disguise. Find me among the kettles!', 'Bunbuku! Which kettle is really a tanuki? Watch closely!'],
+    win: ['Pon! You found me! Your eyes are sharp as a hawk. Take my seal.'],
+    lose: ['Pon pon! Fooled you! A tanuki never plays fair.'] },
+];
+
+export { NPC_DEFS, SHARED_LINES };

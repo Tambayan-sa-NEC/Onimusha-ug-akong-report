@@ -1,0 +1,40 @@
+/* Page shell, the title card and the character select screen. */
+
+:root {
+  --washi: rgba(250, 246, 238, 0.93);
+  --sumi: #2a2522;
+  --shu: #c8423a;       /* torii vermilion */
+  --sakura: #f3b6c6;
+  --matcha: #7f9f5a;
+}
+html, body { margin: 0; height: 100%; overflow: hidden; background: #bcd9ea; color: var(--sumi);
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Songti SC", Georgia, serif; }
+canvas { display: block; }
+
+#hint { position: fixed; left: 16px; top: 16px; padding: 10px 14px 11px; background: var(--washi);
+  border-radius: 4px; font-size: 13px; line-height: 1.75; user-select: none; pointer-events: none;
+  box-shadow: 0 2px 10px rgba(70, 40, 30, .12); }
+kbd { display: inline-block; min-width: 14px; padding: 0 5px; margin-right: 3px; border: 1px solid #c7b49f;
+  border-bottom-width: 2px; border-radius: 3px; background: #fff; font: 11px/16px system-ui, sans-serif; text-align: center; }
+
+#prompt { position: fixed; left: 50%; bottom: 190px; transform: translateX(-50%); padding: 7px 16px;
+  background: rgba(42, 37, 34, .82); color: #fbf4e8; border-radius: 18px; font-size: 15px; white-space: nowrap;
+  opacity: 0; transition: opacity .2s; pointer-events: none; }
+#prompt.show { opacity: 1; }
+#prompt kbd { color: var(--sumi); }
+
+#dialog { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); width: min(600px, 88vw);
+
+/* character select */
+#picks { display: flex; gap: 14px; justify-content: center; margin: 20px 0 6px; }
+.pick { width: 196px; padding: 15px 13px 16px; background: #fffaf0; border: 2px solid #cdbca8; border-radius: 6px;
+  font: inherit; color: var(--sumi); cursor: pointer; text-align: center;
+  transition: border-color .15s, transform .15s, box-shadow .15s; }
+.pick:hover { transform: translateY(-2px); }
+.pick.on { border-color: var(--shu); box-shadow: 0 6px 18px rgba(200, 66, 58, .22); transform: translateY(-2px); }
+.pick .seal { width: 54px; height: 54px; margin: 0 auto 10px; font-size: 30px; line-height: 54px; background: #bcae9e; }
+.pick.on .seal { background: var(--shu); }
+.pname { font-size: 17px; letter-spacing: .05em; }
+.ptag { font-size: 12px; opacity: .6; margin-top: 2px; }
+.pdesc { font-size: 12.5px; line-height: 1.65; opacity: .8; margin-top: 10px; text-align: left; }
+.pdesc kbd { font-size: 10px; min-width: 11px; }

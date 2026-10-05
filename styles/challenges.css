@@ -1,0 +1,37 @@
+/* The on-screen widgets the mini-games build themselves from. */
+
+#stage { position: fixed; left: 50%; top: 52%; transform: translate(-50%, -50%); }
+#stage .panel { background: var(--washi); padding: 20px 24px; border-radius: 6px; box-shadow: 0 6px 24px rgba(70, 40, 30, .18); text-align: center; }
+#banner { position: fixed; left: 50%; top: 36%; transform: translate(-50%, -50%) scale(.7); font-size: 110px; color: var(--sumi);
+  opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; text-shadow: 0 4px 18px rgba(255, 255, 255, .8); }
+#banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+#banner.win { color: var(--shu); }
+#hurtFx { position: fixed; inset: 0; pointer-events: none; opacity: 0; box-shadow: inset 0 0 140px 30px rgba(200, 40, 30, .65); }
+.bar { position: relative; width: min(340px, 70vw); height: 22px; background: #efe6d6; border: 2px solid var(--sumi); border-radius: 12px; }
+.zone { position: absolute; top: 0; bottom: 0; background: rgba(200, 66, 58, .55); }
+.marker { position: absolute; top: -5px; width: 6px; height: 32px; margin-left: -3px; background: var(--sumi); border-radius: 3px; }
+.bar.sumo .mid { position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; background: #b9a896; }
+.rikishi { position: absolute; top: -9px; width: 36px; height: 36px; margin-left: -18px; border-radius: 50%; background: var(--shu);
+  color: #fff4ec; font-size: 20px; line-height: 36px; }
+.ends { display: flex; justify-content: space-between; font-size: 12px; opacity: .7; margin-top: 8px; }
+.lanterns { display: grid; grid-template-columns: repeat(3, 72px); grid-template-rows: repeat(3, 80px); gap: 6px; }
+.lan { display: flex; align-items: center; justify-content: center; border-radius: 40%; background: #e9d6b0; border: 3px solid #6a4a30;
+  font-size: 24px; transition: background .08s, box-shadow .08s; }
+.lan.lit { background: #ffd27a; box-shadow: 0 0 28px #ffb347; }
+.l0 { grid-area: 1 / 2; } .l1 { grid-area: 2 / 1; } .l2 { grid-area: 2 / 3; } .l3 { grid-area: 3 / 2; }
+.big { font-size: 96px; line-height: 1.1; min-width: 200px; }
+.big.go { color: var(--shu); }
+.sub { font-size: 15px; opacity: .8; }
+.quiz { width: min(380px, 80vw); }
+.quiz .q { font-size: 18px; line-height: 1.5; margin-bottom: 12px; }
+.opt { display: block; width: 100%; margin: 6px 0; padding: 9px 12px; font: inherit; font-size: 16px; text-align: left; cursor: pointer;
+  background: #fffaf0; border: 2px solid var(--sumi); border-radius: 4px; color: var(--sumi); }
+.opt:hover { background: #f6ecd8; }
+.opt.right { background: #cfe6b8; } .opt.wrong { background: #f2b8b0; }
+.kettles { position: relative; width: 340px; height: 118px; }
+.kettle { position: absolute; left: 0; top: 14px; width: 100px; height: 88px; border-radius: 44px 44px 16px 16px; background: #3d3b45;
+  color: #f1e6d2; font-size: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: transform .4s ease-in-out, background .2s; }
+.kettle.open { background: #8a6a4a; } .kettle.miss { background: #6f9a55; }
+.slotnums { display: flex; justify-content: space-between; width: 340px; opacity: .6; }
+.slotnums span { width: 100px; text-align: center; }

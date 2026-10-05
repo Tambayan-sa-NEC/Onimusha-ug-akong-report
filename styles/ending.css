@@ -1,0 +1,49 @@
+/* The ending cutscene: a full-screen washi-paper scroll the sumi-e scenes are painted
+   onto, with a line of verse brushed along the bottom. Hidden until #ending.show. */
+
+#ending {
+  position: fixed;
+  inset: 0;
+  z-index: 50;                 /* above the HUD and dialog, below nothing else */
+  display: none;
+  background: #efe7d6;
+  cursor: pointer;
+  overflow: hidden;
+}
+#ending.show { display: block; animation: ink-in 0.9s ease both; }
+
+@keyframes ink-in { from { opacity: 0; } to { opacity: 1; } }
+
+#ending .ink-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#ending .ink-cap {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  transform: translateX(-50%);
+  max-width: min(46rem, 86vw);
+  text-align: center;
+  color: #171310;
+  font-family: "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
+  font-size: clamp(1rem, 2.4vw, 1.6rem);
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 0 rgba(239, 231, 214, 0.9);
+  min-height: 3.4em;           /* reserve room so the scene doesn't jump as text brushes in */
+}
+
+#ending .ink-skip {
+  position: absolute;
+  right: 1.4rem;
+  bottom: 1.1rem;
+  color: rgba(23, 19, 16, 0.5);
+  font-family: Georgia, serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+}
