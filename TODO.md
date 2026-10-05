@@ -121,8 +121,6 @@ Built in `src/ui/pause.js`, styled in `styles/pause.css`, covered by `tests/paus
       stops rather than running on. That makes pausing a reprieve in the ten timed
       mini-games — worth revisiting if it turns out to make them too easy.*
 
-*Still open:* a gamepad has no way into any of this.
-
 #### Settings — **done**
 - [x] Audio: a master volume and a mute that the pause screen can set directly.
       *Separate music and effect buses are still open — the oscillators in
@@ -174,7 +172,6 @@ let the settings screen write to it.
 - [x] Keyboard navigation works on every page, and accepts either axis.
 - [x] Nothing is hard-coded to two characters — the cards, the previews and the stat
       block are all built from `CHAR_ORDER` and `CHARACTERS`.
-- [ ] **Still open:** gamepad support. No page reads a gamepad, menu or otherwise.
 
 ---
 
@@ -200,26 +197,21 @@ NPC was added or removed. `tests/world.test.js` passes untouched.
 
 ---
 
-### 6. Enterable houses
+### 6. Enterable houses — **done**
 
-Currently `makeTeaHouse()` and `makePagoda()` in `world/props.js` are exteriors only.
+Built in `world/houses.js` and `world/arenas/interior.js`, covered by
+`tests/house.test.js`.
 
-- [ ] Pick the approach first, because it decides everything else:
-      - **Interior as an arena.** `world/Arena.js` already hides the planet, swaps the
-        ground under the player, and puts everything back. It was built for boss fights
-        but is close to what a building interior needs. Lowest-risk option, and it
-        reuses a tested system.
-      - **Interior in place**, with the roof hidden on entry. Keeps the world
-        continuous, but needs real work on the camera and colliders.
-- [ ] A door that prompts on `E`, matching how everything else in the game is entered.
-- [ ] Decide what interiors are *for* — a tea house you can sit in, a shop, somewhere a
-      villager sleeps, somewhere a chest hides. An empty room is worse than a closed
-      door.
-- [ ] Remember constraint 2 if you go the arena route: arena builders must not call
-      `rr` or `rand` from `utils/random.js`, including indirectly through a `props.js`
-      builder that uses them.
-
----
+- [x] **Interior as an arena**, the lower-risk route of the two. A room is a flat floor
+      inside solid walls with nothing past the rim, and the one tested path that swaps
+      the ground under the player handles the rest.
+- [x] A noren hung at the door, prompting on `E` like everything else. It refuses to
+      open mid-challenge, and quitting from indoors puts the planet back.
+- [x] Each room holds a keepsake found nowhere else, so neither is an empty room.
+- [x] Both rooms build from their own `mulberry32` and never touch the world stream.
+- [x] A room is a refuge: hunts are called off at the door and suspended indoors, since
+      rooms sit on real directions of the same sphere and a yokai would otherwise walk
+      in after you.
 
 ### 7. Chests — **done**
 

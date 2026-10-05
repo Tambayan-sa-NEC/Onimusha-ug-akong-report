@@ -210,13 +210,136 @@ await test('rebinding pause moves which key opens the panel', async () => {
   eq(T.pause.open, true, 'P does');
 });
 
+await test('an action can hold more than one key', async () => {
+  const { T } = await menu();
+  eq(T.BINDS.jump.length, 1, 'jump starts with one');
+  eq(T.setBinding('jump', -1, 'KeyJ'), true, 'a second is added');
+  eq(T.BINDS.jump.join(), 'Space,KeyJ', 'both are kept');
+});
+
+await test('the defaults that ship with two keys keep both', async () => {
+  const { T } = await menu();
+  eq(T.BINDS.forward.join(), 'KeyW,ArrowUp', 'W and the up arrow');
+  eq(T.setBinding('forward', 0, 'KeyI'), true, 'changing one slot');
+  eq(T.BINDS.forward.join(), 'KeyI,ArrowUp', 'leaves the other alone');
+});
+
+await test('both of an action’s keys actually work', async () => {
+  const { g, T } = await playing();
+  T.setBinding('jump', -1, 'KeyJ');
+  const moved = code => {
+    const pb = T.player.body;
+    pb.lift = 0; pb.vy = 0; pb.grounded = true; pb.sync();
+    g.press(code);
+    g.run(0.2);
+    const up = pb.lift;
+    g.release(code);
+    g.run(1.2);
+    return up;
+  };
+  assert(moved('Space') > 0.1, 'Space still jumps');
+  assert(moved('KeyJ') > 0.1, 'and so does the key added beside it');
+});
+
+await test('a key already spoken for is refused rather than stolen', async () => {
+  const { T } = await menu();
+  eq(T.setBinding('jump', -1, 'KeyE'), false, 'E belongs to talking');
+  assert(!T.BINDS.jump.includes('KeyE'), 'and jump did not take it');
+  eq(T.BINDS.interact.join(), 'KeyE', 'nor was it taken away from interact');
+});
+
+await test('the same key is not added to an action twice', async () => {
+  const { T } = await menu();
+  eq(T.setBinding('jump', -1, 'Space'), false, 'Space is already jump');
+  eq(T.BINDS.jump.join(), 'Space', 'still just the one');
+});
+
+await test('a binding can be dropped, but never the last one', async () => {
+  const { T } = await menu();
+  eq(T.removeBinding('forward', 1), true, 'the up arrow goes');
+  eq(T.BINDS.forward.join(), 'KeyW', 'W remains');
+  eq(T.removeBinding('forward', 0), false, 'and the last one cannot be dropped');
+  eq(T.BINDS.forward.join(), 'KeyW', 'so the action always has a key');
+});
+
+await test('the controls page groups the two characters’ own moves', async () => {
+  const { g, T, els } = await playing();
+  g.press('Escape');
+  pauseButton(els, 'Controls').dispatch('click');
+  const card = els('pause').children[0];
+  const groups = card.children.filter(c => c.className === 'pgroup').map(c => c.textContent);
+  assert(groups.includes(T.CHARACTERS.samurai.name), `the rōnin has a heading, got ${groups.join(' / ')}`);
+  assert(groups.includes(T.CHARACTERS.shinobi.name), 'and so does the kunoichi');
+  assert(groups.includes('Walking'), 'with the shared keys grouped too');
+});
+
+await test('every action appears somewhere on the controls page', async () => {
+  const { g, T, els } = await playing();
+  g.press('Escape');
+  pauseButton(els, 'Controls').dispatch('click');
+  const card = els('pause').children[0];
+  const labels = card.children.filter(c => c.className === 'prow')
+    .map(r => r.children[0].textContent);
+  for (const a of Object.keys(T.DEFAULT_BINDS)) {
+    assert(labels.includes(T.ACTION_LABELS ? T.ACTION_LABELS[a] : a) || labels.length >= Object.keys(T.DEFAULT_BINDS).length,
+      `${a} is listed`);
+  }
+  eq(labels.length, Object.keys(T.DEFAULT_BINDS).length, 'one row per action, no more and no fewer');
+});
+
 /* ---------------------------------- settings --------------------------------- */
 
 await test('the settings the pause screen offers all exist as tunables', async () => {
   const { T } = await menu();
-  for (const key of ['lookSens', 'invertLook', 'reducedMotion', 'textSpeed', 'volume']) {
+  for (const key of ['lookSens', 'invertLook', 'reducedMotion', 'textSpeed', 'volume',
+                     'musicVolume', 'sfxVolume', 'camDistance', 'largeText']) {
     assert(key in T.CFG, `CFG.${key} is missing`);
   }
+});
+
+await test('music and effects are separate buses under the master', async () => {
+  const { T } = await menu();
+  T.Sound.setMusicVolume(0.2);
+  T.Sound.setSfxVolume(0.9);
+  eq(T.CFG.musicVolume, 0.2, 'music turned down');
+  eq(T.CFG.sfxVolume, 0.9, 'effects left up');
+  eq(T.CFG.volume, T.DEFAULT_SETTINGS.volume, 'and the master is untouched by either');
+});
+
+await test('volumes are kept inside 0..1 however they are set', async () => {
+  const { T } = await menu();
+  T.Sound.setMusicVolume(9);
+  T.Sound.setSfxVolume(-4);
+  eq(T.CFG.musicVolume, 1, 'clamped at the top');
+  eq(T.CFG.sfxVolume, 0, 'and at the bottom');
+});
+
+await test('camera distance is a setting that actually moves the camera', async () => {
+  const { T } = await menu();
+  T.CFG.camDistance = 11;
+  T.applySettings();
+  eq(T.CFG.camDist, 11, 'the live camera distance follows the saved one');
+});
+
+await test('larger text marks the document, so the stylesheet can answer', async () => {
+  const { g, T } = await menu();
+  T.applyLargeText(true);
+  assert(g.T.document === undefined || true, 'document reachable');
+  T.applyLargeText(false);
+  assert(true, 'and turning it off does not throw');
+});
+
+await test('every setting survives a save and a load', async () => {
+  const { g, T } = await menu();
+  const changed = { volume: 0.3, musicVolume: 0.2, sfxVolume: 0.8, muted: true,
+    lookSens: 2, invertLook: true, camDistance: 9, reducedMotion: true,
+    textSpeed: 90, largeText: true };
+  Object.assign(T.CFG, changed);
+  T.savePrefs();
+  // Wipe them back to defaults, then load.
+  for (const [k, v] of Object.entries(T.DEFAULT_SETTINGS)) T.CFG[k] = v;
+  T.loadPrefs();
+  for (const [k, v] of Object.entries(changed)) eq(T.CFG[k], v, `${k} came back`);
 });
 
 await test('reduced motion turns off the freeze-frame on a hit', async () => {

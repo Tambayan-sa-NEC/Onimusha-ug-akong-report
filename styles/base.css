@@ -60,3 +60,14 @@ kbd { display: inline-block; min-width: 14px; padding: 0 5px; margin-right: 3px;
 .ptag { font-size: 12px; opacity: .6; margin-top: 2px; }
 .pdesc { font-size: 12.5px; line-height: 1.65; opacity: .8; margin-top: 10px; text-align: left; }
 .pdesc kbd { font-size: 10px; min-width: 11px; }
+
+/* larger text, for anyone who wants it */
+body.bigtext #dtext { font-size: 21px; }
+body.bigtext #dname { font-size: 18px; }
+body.bigtext #prompt { font-size: 18px; }
+body.bigtext #chTitle { font-size: 21px; }
+body.bigtext #chHow { font-size: 15px; }
+body.bigtext #chStatus { font-size: 19px; }
+body.bigtext #hint { font-size: 15px; }
+body.bigtext .pcard { font-size: 17px; }
+body.bigtext .prow { font-size: 16px; }

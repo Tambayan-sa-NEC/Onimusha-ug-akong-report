@@ -116,3 +116,22 @@
 .piline { display: none; }        /* the line belongs in the tooltip, not the grid */
 
 @media (max-width: 520px) { .pitems { grid-template-columns: repeat(3, 1fr); } }
+
+/* controls: grouped, with more than one key allowed per action */
+.pgroup {
+  margin: 14px 0 2px;
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  opacity: .5;
+  text-align: left;
+}
+.pgroup:first-of-type { margin-top: 6px; }
+.pkey.add { padding: 5px 9px; color: #9a8a78; border-style: dashed; }
+.pkey.add:hover { color: var(--shu); }
+.pkey.drop {
+  padding: 5px 7px; margin-left: -4px;
+  color: #b09a86; border-color: transparent; background: transparent;
+  border-bottom-width: 1px;
+}
+.pkey.drop:hover { color: var(--shu); background: #fdeceb; }

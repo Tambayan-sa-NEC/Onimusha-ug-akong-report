@@ -7,7 +7,7 @@ import { CFG } from '../config/settings.js';
 import { clamp } from '../utils/math.js';
 
 const Sound = {
-  ctx: null, master: null, echo: null, white: null, muted: false, idx: 6,
+  ctx: null, master: null, music: null, effects: null, echo: null, white: null, muted: false, idx: 6,
   scale: [164.81, 174.61, 220.0, 246.94, 261.63, 329.63, 349.23, 440.0, 493.88, 523.25, 659.25],
   init() {
     if (this.ctx) return;
@@ -15,10 +15,14 @@ const Sound = {
     if (!AC) return;
     const ctx = this.ctx = new AC();
     this.master = ctx.createGain(); this.master.gain.value = this.muted ? 0 : CFG.volume; this.master.connect(ctx.destination);
+    // Two buses under the master, so the wandering koto and the sword hits can be
+    // turned down independently. Everything that makes a sound picks one.
+    this.music = ctx.createGain(); this.music.gain.value = CFG.musicVolume; this.music.connect(this.master);
+    this.effects = ctx.createGain(); this.effects.gain.value = CFG.sfxVolume; this.effects.connect(this.master);
     // echo send
     const delay = ctx.createDelay(1), fb = ctx.createGain(), wet = ctx.createGain();
     delay.delayTime.value = 0.42; fb.gain.value = 0.38; wet.gain.value = 0.35;
-    delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(this.master);
+    delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(this.music);
     this.echo = delay;
     // noise buffers (brown for wind, white for splashes)
     const len = ctx.sampleRate * 3;
@@ -33,7 +37,7 @@ const Sound = {
     const lfo = ctx.createOscillator(), lfoG = ctx.createGain();
     lfo.frequency.value = 0.07; lfoG.gain.value = 250;
     lfo.connect(lfoG); lfoG.connect(lp.frequency); lfo.start();
-    src.connect(lp); lp.connect(g); g.connect(this.master); src.start();
+    src.connect(lp); lp.connect(g); g.connect(this.music); src.start();   // wind is ambience
     // gentle wandering melody
     const next = () => {
       this.idx = clamp(this.idx + Math.floor(Math.random() * 5) - 2, 0, this.scale.length - 1);
@@ -43,7 +47,7 @@ const Sound = {
     };
     setTimeout(next, 800);
   },
-  pluck(freq, vol = 0.1) {
+  pluck(freq, vol = 0.1, bus) {
     const ctx = this.ctx; if (!ctx || this.muted) return;
     const t = ctx.currentTime, g = ctx.createGain(), lp = ctx.createBiquadFilter();
     g.gain.setValueAtTime(0.0001, t);
@@ -56,26 +60,27 @@ const Sound = {
       o.type = type; o.frequency.value = freq * mul; og.gain.value = v;
       o.connect(og); og.connect(lp); o.start(t); o.stop(t + 2.5);
     }
-    lp.connect(g); g.connect(this.master); g.connect(this.echo);
+    lp.connect(g); g.connect(bus || this.music); g.connect(this.echo);
   },
-  tone(f0, f1, dur, type = 'sine', vol = 0.08) {
+  tone(f0, f1, dur, type = 'sine', vol = 0.08, bus) {
     const ctx = this.ctx; if (!ctx || this.muted || vol <= 0.001) return;
     const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
     o.type = type;
     o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.05);
+    o.connect(g); g.connect(bus || this.effects); o.start(t); o.stop(t + dur + 0.05);
   },
-  noiseBurst(dur, freq, vol) {
+  noiseBurst(dur, freq, vol, bus) {
     const ctx = this.ctx; if (!ctx || this.muted || vol <= 0.001) return;
     const t = ctx.currentTime, s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
     s.buffer = this.white; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 0.8;
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    s.connect(f); f.connect(g); g.connect(this.master); s.start(t, Math.random() * 2); s.stop(t + dur);
+    s.connect(f); f.connect(g); g.connect(bus || this.effects); s.start(t, Math.random() * 2); s.stop(t + dur);
   },
   sfx(name, v = 1) {
     if (!this.ctx || this.muted) return;
+    const fx = this.effects;          // a pluck used as an effect is still an effect
     switch (name) {
       case 'meow': this.tone(820, 520, 0.38, 'sine', 0.07 * v); break;
       case 'bark': this.tone(480, 240, 0.1, 'square', 0.035 * v); setTimeout(() => this.tone(460, 230, 0.1, 'square', 0.03 * v), 150); break;
@@ -83,19 +88,19 @@ const Sound = {
       case 'chirp': this.tone(2600, 3400, 0.07, 'sine', 0.04 * v); setTimeout(() => this.tone(2800, 3600, 0.06, 'sine', 0.035 * v), 90); break;
       case 'splash': this.noiseBurst(0.35, 1800, 0.25 * v); break;
       case 'jump': this.tone(320, 520, 0.12, 'triangle', 0.04); break;
-      case 'talk': this.pluck(659.25, 0.08); setTimeout(() => this.pluck(880, 0.05), 120); break;
+      case 'talk': this.pluck(659.25, 0.08, fx); setTimeout(() => this.pluck(880, 0.05, fx), 120); break;
       case 'poof': this.noiseBurst(0.45, 700, 0.35); break;
       case 'kon': this.tone(900, 1350, 0.14, 'triangle', 0.05 * v); break;
       case 'boing': this.tone(260, 620, 0.18, 'triangle', 0.06 * v); setTimeout(() => this.tone(300, 700, 0.15, 'triangle', 0.05 * v), 170); break;
       case 'boo': this.tone(340, 170, 0.45, 'sine', 0.08 * v); break;
-      case 'wisp': this.pluck(987.77, 0.035 * v); break;
-      case 'good': this.pluck(880, 0.07); break;
+      case 'wisp': this.pluck(987.77, 0.035 * v, fx); break;
+      case 'good': this.pluck(880, 0.07, fx); break;
       case 'bad': this.tone(210, 140, 0.2, 'square', 0.03); break;
-      case 'win': [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => this.pluck(f, 0.08), i * 120)); break;
+      case 'win': [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => this.pluck(f, 0.08, fx), i * 120)); break;
       case 'lose': this.tone(330, 160, 0.6, 'triangle', 0.07); break;
       case 'boom': this.noiseBurst(0.5, 180, 0.7); this.tone(120, 45, 0.45, 'sine', 0.15); break;
       case 'hit': this.tone(180, 90, 0.25, 'square', 0.05); break;
-      case 'clash': this.noiseBurst(0.18, 3200, 0.45); this.pluck(1318.5, 0.06); break;
+      case 'clash': this.noiseBurst(0.18, 3200, 0.45); this.pluck(1318.5, 0.06, fx); break;
       case 'swish': this.noiseBurst(0.16, 2400, 0.22); break;
     }
   },
@@ -103,6 +108,16 @@ const Sound = {
   setVolume(v) {
     CFG.volume = clamp(Number(v) || 0, 0, 1);
     if (this.master && !this.muted) this.master.gain.setTargetAtTime(CFG.volume, this.ctx.currentTime, 0.1);
+  },
+  /** The wandering koto and the wind. */
+  setMusicVolume(v) {
+    CFG.musicVolume = clamp(Number(v) || 0, 0, 1);
+    if (this.music) this.music.gain.setTargetAtTime(CFG.musicVolume, this.ctx.currentTime, 0.1);
+  },
+  /** Everything the world does at you. */
+  setSfxVolume(v) {
+    CFG.sfxVolume = clamp(Number(v) || 0, 0, 1);
+    if (this.effects) this.effects.gain.setTargetAtTime(CFG.sfxVolume, this.ctx.currentTime, 0.1);
   },
   setMuted(on) {
     this.muted = !!on;

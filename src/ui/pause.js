@@ -6,7 +6,10 @@
  */
 import { abandonChallenge, ch, el, forfeitChallenge } from '../challenges/system.js';
 import { leaveRoom } from '../world/houses.js';
-import { BINDS, DEFAULT_BINDS, bindConflict, rebind, resetBinds } from '../config/keys.js';
+import {
+  DEFAULT_BINDS, bindConflict, codesFor, removeBinding, resetBinds, setBinding,
+} from '../config/keys.js';
+import { CHARACTERS } from '../config/characters.js';
 import { CFG, DEFAULT_SETTINGS } from '../config/settings.js';
 import { collection } from '../core/keepsakes.js';
 import { loadPrefs, savePrefs } from '../core/save.js';
@@ -30,9 +33,20 @@ function keyLabel(code) {
 }
 const ACTION_LABELS = {
   forward: 'Walk forward', back: 'Walk back', left: 'Turn left', right: 'Turn right',
-  sprint: 'Sprint', jump: 'Jump', interact: 'Talk / accept', dash: 'Shadow dash (kunoichi)',
-  roll: 'Dodge roll (rōnin)', mute: 'Mute sound', pause: 'Pause',
+  sprint: 'Sprint', jump: 'Jump', interact: 'Talk / accept', dash: 'Shadow dash',
+  roll: 'Dodge roll', mute: 'Mute sound', pause: 'Pause',
 };
+/**
+ * The controls read better grouped than as one flat column, and the two characters
+ * have moves the other does not — so whose is whose is a heading rather than a
+ * parenthesis after the label.
+ */
+const ACTION_GROUPS = [
+  { title: 'Walking', actions: ['forward', 'back', 'left', 'right', 'sprint', 'jump'] },
+  { title: 'Doing things', actions: ['interact', 'mute', 'pause'] },
+  { title: CHARACTERS.samurai.name, actions: ['roll'] },
+  { title: CHARACTERS.shinobi.name, actions: ['dash'] },
+];
 
 /* --------------------------------- the panel -------------------------------- */
 
@@ -76,42 +90,42 @@ function renderQuit(box) {
 function renderSettings(box) {
   el('h2', undefined, 'Settings', box);
 
-  const vol = row(box, 'Volume');
-  const slider = el('input', 'prange', undefined, vol);
-  slider.type = 'range'; slider.min = '0'; slider.max = '1'; slider.step = '0.05';
-  slider.value = String(CFG.volume);
-  slider.addEventListener('input', () => {
-    CFG.volume = Number(slider.value);
-    Sound.setVolume(CFG.volume);
-    savePrefs();
-  });
+  slider(box, 'Volume', 'volume', 0, 1, 0.05, v => Sound.setVolume(v));
 
+  slider(box, 'Music', 'musicVolume', 0, 1, 0.05, v => Sound.setMusicVolume(v));
+  slider(box, 'Effects', 'sfxVolume', 0, 1, 0.05, v => Sound.setSfxVolume(v));
   checkbox(box, 'Mute', 'muted', v => Sound.setMuted(v));
 
-  const sens = row(box, 'Look sensitivity');
-  const ss = el('input', 'prange', undefined, sens);
-  ss.type = 'range'; ss.min = '0.25'; ss.max = '3'; ss.step = '0.05';
-  ss.value = String(CFG.lookSens);
-  ss.addEventListener('input', () => { CFG.lookSens = Number(ss.value); savePrefs(); });
-
+  slider(box, 'Look sensitivity', 'lookSens', 0.25, 3, 0.05);
   checkbox(box, 'Invert look', 'invertLook');
-  checkbox(box, 'Reduced motion', 'reducedMotion');
+  slider(box, 'Camera distance', 'camDistance', 4.5, 13, 0.1, v => { CFG.camDist = v; });
 
-  const speed = row(box, 'Text speed');
-  const ts = el('input', 'prange', undefined, speed);
-  ts.type = 'range'; ts.min = '10'; ts.max = '120'; ts.step = '5';
-  ts.value = String(CFG.textSpeed);
-  ts.addEventListener('input', () => { CFG.textSpeed = Number(ts.value); savePrefs(); });
+  checkbox(box, 'Reduced motion', 'reducedMotion');
+  slider(box, 'Text speed', 'textSpeed', 10, 120, 5);
+  checkbox(box, 'Larger text', 'largeText', v => applyLargeText(v));
 
   button(box, 'Reset to defaults', 'pbtn', () => {
     for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) CFG[k] = v;
-    Sound.setVolume(CFG.volume); Sound.setMuted(CFG.muted);
+    applySettings();
     savePrefs();
     show('settings');
   });
   button(box, 'Back', 'pbtn', back);
 }
 
+/** A labelled range bound to one tunable. */
+function slider(box, label, key, min, max, step, after) {
+  const r = row(box, label);
+  const i = el('input', 'prange', undefined, r);
+  i.type = 'range'; i.min = String(min); i.max = String(max); i.step = String(step);
+  i.value = String(CFG[key]);
+  i.addEventListener('input', () => {
+    CFG[key] = Number(i.value);
+    if (after) after(CFG[key]);
+    savePrefs();
+  });
+  return i;
+}
 function checkbox(box, label, key, after) {
   const r = row(box, label);
   const c = el('input', 'pcheck', undefined, r);
@@ -127,19 +141,33 @@ function checkbox(box, label, key, after) {
 
 function renderKeys(box) {
   el('h2', undefined, 'Controls', box);
-  el('p', 'phint', pause.listening
-    ? `Press a key for "${ACTION_LABELS[pause.listening]}", or Escape to cancel.`
-    : 'Click a binding to change it.', box);
+  const waiting = pause.listening;
+  el('p', 'phint', waiting
+    ? `Press a key for "${ACTION_LABELS[waiting.action]}", or Escape to cancel.`
+    : 'Click a key to change it, + to add another, × to drop one.', box);
 
-  for (const action of Object.keys(DEFAULT_BINDS)) {
-    const r = row(box, ACTION_LABELS[action] || action);
-    const keys = el('div', 'pkeys', undefined, r);
-    const listening = pause.listening === action;
-    const text = listening ? 'press a key…' : (BINDS[action] || []).map(keyLabel).join('  /  ');
-    button(keys, text, listening ? 'pkey listening' : 'pkey', () => {
-      pause.listening = listening ? null : action;
-      show('keys');
-    });
+  for (const grp of ACTION_GROUPS) {
+    el('div', 'pgroup', grp.title, box);
+    for (const action of grp.actions) {
+      if (!(action in DEFAULT_BINDS)) continue;
+      const r = row(box, ACTION_LABELS[action] || action);
+      const keys = el('div', 'pkeys', undefined, r);
+      const codes = codesFor(action);
+      codes.forEach((code, i) => {
+        const live = waiting && waiting.action === action && waiting.slot === i;
+        button(keys, live ? 'press a key…' : keyLabel(code),
+          live ? 'pkey listening' : 'pkey',
+          () => { pause.listening = live ? null : { action, slot: i }; show('keys'); });
+        // Only offer to drop one while the action would still have a key left.
+        if (codes.length > 1 && !live) {
+          button(keys, '×', 'pkey drop',
+            () => { removeBinding(action, i); savePrefs(); show('keys'); });
+        }
+      });
+      const adding = waiting && waiting.action === action && waiting.slot === -1;
+      button(keys, adding ? 'press a key…' : '+', adding ? 'pkey listening' : 'pkey add',
+        () => { pause.listening = adding ? null : { action, slot: -1 }; show('keys'); });
+    }
   }
   button(box, 'Reset to defaults', 'pbtn', () => { resetBinds(); savePrefs(); show('keys'); });
   button(box, 'Back', 'pbtn', () => { pause.listening = null; back(); });
@@ -224,9 +252,10 @@ function quitToMenu() {
 function pauseKey(code) {
   if (!pause.open) return false;
   if (pause.listening) {
-    if (code === 'Escape') pause.listening = null;          // cancel, do not bind Escape by accident
-    else if (!bindConflict(code, pause.listening)) { rebind(pause.listening, [code]); pause.listening = null; savePrefs(); }
-    else pause.listening = null;                            // taken: leave the old binding alone
+    const { action, slot } = pause.listening;
+    // Escape cancels rather than binding itself, or there would be no way back out.
+    if (code !== 'Escape' && !bindConflict(code, action)) { setBinding(action, slot, code); savePrefs(); }
+    pause.listening = null;
     show('keys');
     return true;
   }
@@ -238,12 +267,27 @@ function pauseKey(code) {
   return true;   // paused: nothing else gets a look in
 }
 
+/** Bigger dialogue and prompts, for anyone who wants them. */
+function applyLargeText(on) {
+  const b = document.body;
+  if (b && b.classList) b.classList.toggle('bigtext', !!on);
+}
+
+/** Push every setting out to whatever actually obeys it. */
+function applySettings() {
+  Sound.setVolume(CFG.volume);
+  Sound.setMusicVolume(CFG.musicVolume);
+  Sound.setSfxVolume(CFG.sfxVolume);
+  Sound.setMuted(CFG.muted);
+  CFG.camDist = CFG.camDistance;
+  applyLargeText(CFG.largeText);
+}
+
 /** Build the panel once, and restore whatever was saved last time. */
 function initPause() {
   loadPrefs();
-  Sound.setVolume(CFG.volume);
-  Sound.setMuted(CFG.muted);
+  applySettings();
   panel().classList.remove('show');
 }
 
-export { closePause, initPause, keyLabel, openFromTitle, openPause, pause, pauseKey, quitToMenu, togglePause };
+export { applyLargeText, applySettings, closePause, initPause, keyLabel, openFromTitle, openPause, pause, pauseKey, quitToMenu, togglePause };

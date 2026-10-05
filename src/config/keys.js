@@ -52,4 +52,37 @@ function rebind(action, codes) {
   return true;
 }
 
-export { BINDS, DEFAULT_BINDS, actionFor, bindConflict, codesFor, isBound, rebind, resetBinds };
+/**
+ * Set one of an action's bindings, leaving its others alone. `index` of -1 adds a
+ * new one, which is how an action ends up with both `W` and the up arrow.
+ */
+function setBinding(action, index, code) {
+  if (!(action in DEFAULT_BINDS) || typeof code !== 'string' || !code) return false;
+  if (bindConflict(code, action)) return false;
+  const codes = codesFor(action).slice();
+  if (codes.includes(code)) return false;          // already bound to this very action
+  if (index < 0 || index >= codes.length) codes.push(code);
+  else codes[index] = code;
+  BINDS[action] = codes;
+  return true;
+}
+
+/** Drop one binding. An action is never left with none. */
+function removeBinding(action, index) {
+  const codes = codesFor(action).slice();
+  if (codes.length <= 1 || index < 0 || index >= codes.length) return false;
+  codes.splice(index, 1);
+  BINDS[action] = codes;
+  return true;
+}
+
+/**
+ * Which character an action belongs to, or null when it is everyone's. The two
+ * characters have moves the other does not, so the controls screen says whose is whose.
+ */
+const ACTION_OWNER = { dash: 'shinobi', roll: 'samurai' };
+
+export {
+  ACTION_OWNER, BINDS, DEFAULT_BINDS, actionFor, bindConflict, codesFor, isBound,
+  rebind, removeBinding, resetBinds, setBinding,
+};

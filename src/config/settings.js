@@ -12,11 +12,15 @@ const WALK_MIN = R + 0.15;    // terrain lower than this counts as water
  */
 const DEFAULT_SETTINGS = {
   volume: 0.55,          // master output, 0..1
+  musicVolume: 1,        // the wandering koto and the wind, under the master
+  sfxVolume: 1,          // everything the world does at you, under the master
   muted: false,
   lookSens: 1,           // multiplier on right-drag look
   invertLook: false,
+  camDistance: 7.2,      // how far the camera sits back by default
   reducedMotion: false,  // drops the freeze-frame on hits and the drifting petals
   textSpeed: 45,         // dialogue characters per second
+  largeText: false,      // bigger dialogue and prompts
 };
 
 const CFG = {
