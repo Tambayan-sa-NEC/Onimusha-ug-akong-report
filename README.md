@@ -9,7 +9,8 @@ sealed arena of its own. Fell them both and the journey is told back as an endin
 cutscene, brushed in sumi-e ink.
 
 Along the way there are twelve keepsakes left in chests, two buildings you can walk
-into, and any cat or dog on the planet will come with you if you ask it nicely.
+into, and any cat or dog on the planet will come with you if you ask it nicely. A day
+lasts four minutes, so you will see the sun go down more than once.
 
 ## Screenshots
 
@@ -27,7 +28,9 @@ in this repository.
 | ![A battle with a yokai](docs/screenshots/battle.png) | ![Opening a chest](docs/screenshots/chest.png) |
 | Or refuse the game and settle it with the blade. Hearts sit bottom-left whether or not you are fighting. | Twelve keepsakes are left in chests. None of them do anything, which is rather the point. |
 | ![Inside the tea house](docs/screenshots/interior.png) | ![The pause screen](docs/screenshots/pause.png) |
-| The tea house and the pagoda can be walked into, and nothing follows you in. | Settings, controls, keepsakes and a way out, all behind `Esc`. |
+| The tea house and the pagoda can be walked into, and nothing follows you in. | Settings, controls, seals, keepsakes and a way out, all behind `Esc`. |
+| ![Dusk over the planet](docs/screenshots/day-dusk.png) | ![Midnight](docs/screenshots/day-midnight.png) |
+| A day is four minutes: two of light, two of dark. Dusk turns the whole sky over. | At midnight the fog closes in and the drifting petals read as stars. |
 
 ## Running it
 
@@ -81,7 +84,7 @@ src/
   entities/             the player, the animals, the yokai, the bosses
     models/             the geometry each one is built from
   data/                 who the characters are, what they say, and what is in the chests
-  systems/              input, camera, hunting, interaction, spawning, audio
+  systems/              input, camera, hunting, interaction, spawning, audio, daylight
   combat/               battles, boss fights, the katana and the kunai
   challenges/           the challenge flow, the seal book, the ten mini-games
   ui/                   title and character select, dialogue, hud, pause screen

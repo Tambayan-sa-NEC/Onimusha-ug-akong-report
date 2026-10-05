@@ -278,8 +278,15 @@ My suggestions, not from your list. Pick up or discard freely.
       no reduced-motion option exists despite constant falling petals and hit-stop on
       every sword connection. Cheap to do alongside the settings screen, expensive to
       retrofit later.
-- [ ] **A day/night cycle.** The art style would carry it beautifully, and lanterns
-      already exist as props — they currently glow in full daylight.
+- [x] **A day/night cycle.** *Done — `systems/daylight.js`. Four minutes round, two of
+      daylight and two of night, as eight interpolated moments driving sky, fog, sun and
+      hemisphere light. Arenas and rooms hold the sky while they are showing and are
+      handed the current hour back on the way out; the clock keeps running underneath,
+      so a long boss fight ends later in the day than it began. Off is a setting, and
+      holds the sky at noon.*
+      **Still open:** the lanterns are a pale yellow material rather than a light, so
+      they read as lit at every hour. They look right after dark and slightly odd at
+      noon — see the note in #1.
 - [ ] **A journal or quest log.** Which seals remain, who you have met, what a villager
       asked for. Grows naturally out of #5.
 - [ ] **Photo mode.** Hide the HUD, free the camera. The game is pretty and has no way

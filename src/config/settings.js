@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS = {
   reducedMotion: false,  // drops the freeze-frame on hits and the drifting petals
   textSpeed: 45,         // dialogue characters per second
   largeText: false,      // bigger dialogue and prompts
+  dayNight: true,        // the four-minute day/night cycle; off holds the sky at noon
 };
 
 const CFG = {

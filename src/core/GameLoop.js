@@ -11,6 +11,7 @@ import { updateEmotes } from '../render/effects/emotes.js';
 import { feedback } from '../render/effects/impact.js';
 import { updatePetals } from '../render/effects/petals.js';
 import { updateCamera } from '../systems/camera.js';
+import { updateDaylight } from '../systems/daylight.js';
 import { updateHunts } from '../systems/hunting.js';
 import { updateInteraction } from '../systems/interaction.js';
 import { updateEnding } from '../ui/ending.js';
@@ -29,6 +30,8 @@ function frame() {
   // delta the size of the whole pause.
   last = now;
   if (session.paused) { renderer.render(scene, camera); return; }
+
+  updateDaylight(raw);   // the sky turns on the title screen too, behind the menu
 
   let dt = raw;
   if (feedback.hitStop > 0) {

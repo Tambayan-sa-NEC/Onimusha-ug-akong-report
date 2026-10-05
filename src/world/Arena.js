@@ -17,6 +17,7 @@ import { player } from '../entities/Player.js';
 import { clearEmotes } from '../render/effects/emotes.js';
 import { petals } from '../render/effects/petals.js';
 import { cam, updateCamera } from '../systems/camera.js';
+import { holdDaylight, releaseDaylight } from '../systems/daylight.js';
 import { randTangent } from '../utils/sphere.js';
 import { ARENAS } from './arenas/index.js';
 import { setGroundOverride } from './terrain.js';
@@ -68,6 +69,9 @@ const arena = {
     petals.visible = false;
     arenaRoot.visible = true;
 
+    // The hour stops painting the sky while somewhere else is showing. The clock
+    // keeps running underneath, so a long fight ends later in the day than it began.
+    holdDaylight();
     worldFog.near = scene.fog.near;
     worldFog.far = scene.fog.far;
     scene.background = new THREE.Color(def.sky);
@@ -90,10 +94,11 @@ const arena = {
     worldRoot.visible = true;
     petals.visible = true;
 
-    scene.background = SKY;
-    scene.fog.color.set(SKY);
+    // Hand the sky back to the clock, which repaints it at whatever hour it is now —
+    // walking out of a boss fight into the same midday you left would be a lie.
     scene.fog.near = worldFog.near;
     scene.fog.far = worldFog.far;
+    releaseDaylight();
 
     clearEmotes();
     clearKunai();

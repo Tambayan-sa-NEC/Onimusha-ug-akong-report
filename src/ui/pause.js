@@ -20,6 +20,7 @@ import { collection } from '../core/keepsakes.js';
 import { loadPrefs, savePrefs } from '../core/save.js';
 import { session } from '../core/Session.js';
 import { Sound } from '../systems/audio.js';
+import { applyDaylight } from '../systems/daylight.js';
 import { toMenu } from './characterSelect.js';
 import { $ } from '../utils/dom.js';
 
@@ -109,6 +110,7 @@ function renderSettings(box) {
   checkbox(box, 'Reduced motion', 'reducedMotion');
   slider(box, 'Text speed', 'textSpeed', 10, 120, 5);
   checkbox(box, 'Larger text', 'largeText', v => applyLargeText(v));
+  checkbox(box, 'Day and night', 'dayNight', () => applyDaylight());
 
   button(box, 'Reset to defaults', 'pbtn', () => {
     for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) CFG[k] = v;
@@ -319,6 +321,7 @@ function applySettings() {
   Sound.setMuted(CFG.muted);
   CFG.camDist = CFG.camDistance;
   applyLargeText(CFG.largeText);
+  applyDaylight();
 }
 
 /** Build the panel once, and restore whatever was saved last time. */
