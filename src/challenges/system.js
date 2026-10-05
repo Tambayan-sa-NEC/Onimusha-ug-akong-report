@@ -10,7 +10,7 @@ import { startAction } from '../entities/models/humanoid.js';
 import { emote } from '../render/effects/emotes.js';
 import { beacon } from '../render/effects/rings.js';
 import { Sound } from '../systems/audio.js';
-import { recordProgress } from '../ui/characterSelect.js';
+import { saveProgress } from '../core/save.js';
 import { openDialog } from '../ui/dialog.js';
 import { ending, playEnding } from '../ui/ending.js';
 import { $ } from '../utils/dom.js';
@@ -71,7 +71,7 @@ function resolveChallenge(c, win) {
     if (c.g.boss) bossWon.add(h.def.id);
     else { won.add(h.def.game); if (c.g.fight) slain.add(h.def.id); }   // a battle win is a blade kill
     buildSeals();
-    recordProgress();            // so the run can be picked up again later
+    if (player.char) saveProgress({ char: player.char.id, won, bossWon, slain });   // pick-up-able later
   }
   setStatus(win ? 'Seal earned!' : 'Try again next time you meet.');
 }

@@ -3,7 +3,9 @@
  */
 import { oniAnim } from '../entities/NPC.js';
 
-// Lines are [text, action?, emote?]. Actions: bow, hop, spin, wave, meditate, dance, vanish.
+// Lines are [text, action?, emote?, when?]. Actions: bow, hop, spin, wave, meditate, dance,
+// vanish. `when` is 'start', 'midway', 'gate' or 'done' — the chapter the line belongs to.
+// A line with no `when` is said at any point. See `chapter()` in entities/NPC.js.
 const SHARED_LINES = [
   ['Petals drifting down —\nthe path forgets where it went,\nbut my feet remember.', 'bow', '♪'],
   ['A frog on a stone\nconsiders the whole wide pond\nand decides to nap.', null, '♪'],
@@ -13,9 +15,13 @@ const SHARED_LINES = [
   ['Morning mist lingers\non the roof of the pagoda —\na cat yawns, then sleeps.', null, '♪'],
   ['Have you tried the dango? Oh, wait. There is no shop. I simply dream of dango.', 'hop', '?'],
   ['The wind is in a good mood. Can you hear it in the bamboo?', 'wave'],
+  ['You have not met the yokai yet, have you? They are not unkind. Mostly.', 'wave', null, 'start'],
+  ['Word travels. They say you have been winning seals.', 'bow', '!', 'midway'],
+  ['The gate stands open. The whole hill feels like it is holding its breath.', null, '門', 'gate'],
+  ['Both of the great ones have bowed to you. The planet feels lighter.', 'bow', '祝', 'done'],
 ];
 const NPC_DEFS = [
-  { id: 'kenji', name: 'Kenji the Ronin', seal: '侍',
+  { id: 'kenji', name: 'Kenji the Ronin', seal: '侍', wander: 0.1, hints: true,
     look: { top: '#3d4f73', bottom: '#2c2f3d', sash: '#c9b27a', hair: 'topknot', hakama: true, katana: true },
     lines: [
       ['A sword is heaviest when you carry anger. Today, mine feels light.', 'bow', '礼'],
@@ -23,9 +29,12 @@ const NPC_DEFS = [
       ['Walk slowly, friend. The planet is small, but there is no hurry.', 'wave'],
       ['Watch closely — hah! ...I missed the falling petal. Again.', 'spin', '斬!'],
       ['The way of the warrior begins with sweeping your own doorstep.', 'bow'],
+      ['No seals yet? Then everything is still ahead of you. I envy that.', 'bow', null, 'start'],
+      ['Five seals. The gate will not argue with that. Go and see.', 'spin', '斬!', 'gate'],
+      ['You felled them both. I shall tell that story badly, for years.', 'bow', '礼', 'done'],
       ['Hmph. My stance is perfect. Do not tell anyone the cat startled me earlier.', 'hop', '!'],
     ] },
-  { id: 'hanako', name: 'Hanako, Tea Master', seal: '茶',
+  { id: 'hanako', name: 'Hanako, Tea Master', seal: '茶', wander: 0.05,
     look: { top: '#8a6fae', sash: '#e8c35e', hair: 'bun', robe: true },
     lines: [
       ['Ichi-go ichi-e. This moment, this cup, will never come again.', 'bow', '茶'],
@@ -34,8 +43,10 @@ const NPC_DEFS = [
       ['Matcha should be whisked until it foams like morning mist.', null, '茶'],
       ['Sweets first, tea second. The bitterness tastes kinder that way.', 'bow'],
       ['A samurai in my tea house? Leave the sword by the door, please. ...Thank you.', 'bow', '礼'],
+      ['Come back when you have won a seal and I will pour you something special.', 'wave', null, 'start'],
+      ['You have earned your tea today. Sit, if your legs will let you.', 'bow', '茶', 'done'],
     ] },
-  { id: 'daisuke', name: 'Monk Daisuke', seal: '禅',
+  { id: 'daisuke', name: 'Monk Daisuke', seal: '禅', wander: 0.06, hints: true,
     look: { top: '#d88a3c', sash: '#8a5530', hair: 'bald', robe: true, skin: '#e8b98f' },
     lines: [
       ['Breathe in... breathe out. Congratulations. You did it perfectly.', 'meditate', '禅'],
@@ -75,7 +86,7 @@ const NPC_DEFS = [
       ['I trained for years to walk without a sound. The cats still hear me.'],
       ['I am not hiding from you. I am hiding from my mother.', 'vanish'],
     ] },
-  { id: 'goro', name: 'Old Goro the Fisherman', seal: '魚',
+  { id: 'goro', name: 'Old Goro the Fisherman', seal: '魚', wander: 0.07, hints: true,
     look: { top: '#5d7d98', bottom: '#3e4a55', sash: '#c9b27a', hair: 'short', hat: 'kasa', hairColor: '#9a9a9a' },
     lines: [
       ['The koi are not for catching. I just like to watch them think.'],

@@ -177,22 +177,25 @@ let the settings screen write to it.
 
 ---
 
-### 5. Better NPCs
+### 5. Better NPCs — **mostly done**
 
-Villagers are defined in `data/npcDefs.js` as `{ id, name, seal, look, lines }`, where
-each line is `[text, action?, emote?]`. They stand still and cycle their lines.
+Covered by `tests/npc.test.js`.
 
-- [ ] Let them move — a daily path, a place they belong, somewhere they go. The planet
-      feels staged because nobody walks it but you.
-- [ ] Make dialogue react to state: whether you have met them, how many seals you carry,
-      whether the gate is open, whether a boss has fallen. The data shape already has
-      room for conditional lines.
-- [ ] Give a few of them something to *do* — a hint toward an unfound yokai, a reward, a
-      small errand. Right now every conversation is flavour.
-- [ ] More variety in `look` and in the animation set (`bow`, `hop`, `spin`, `wave`,
-      `meditate`, `dance`, `vanish`).
-- [ ] Watch the spawn count: NPCs are placed during `spawnWorld`, so adding or moving
-      them changes the world fingerprint. See constraint 1.
+- [x] All seven villagers now walk. Each has a `wander` leash in radians and returns to
+      the spot it belongs to, so the village still feels inhabited rather than scattered.
+- [x] Dialogue reacts to progress. Lines gained a fourth slot, `when`, naming the chapter
+      they belong to — `start`, `midway`, `gate` or `done` — and `chapter()` in
+      `entities/NPC.js` decides which is current. An NPC with no line for the current
+      chapter falls back to its whole set rather than falling silent.
+- [x] Kenji, Daisuke and Goro give hints, naming a game still unplayed, and pointing at
+      the gate once there are none left.
+- [ ] **Still open:** no new `look` variety, and the animation set is unchanged.
+- [ ] **Still open:** nobody gives a reward or sets an errand — hints are as far as it
+      goes.
+
+**No world-generation risk after all.** None of this changes how many draws come out of
+the seeded stream: `wander` is read at runtime, `makeHumanoid` never calls `rand`, and no
+NPC was added or removed. `tests/world.test.js` passes untouched.
 
 ---
 

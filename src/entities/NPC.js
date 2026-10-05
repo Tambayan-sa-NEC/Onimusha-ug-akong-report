@@ -1,7 +1,10 @@
 /**
  * Villagers and humanoid yokai: idle life, dialogue and gestures.
  */
+import { GAMES } from '../challenges/games/index.js';
+import { bossWon, gateOpen, won } from '../challenges/system.js';
 import { R } from '../config/settings.js';
+import { BOSS_ORDER } from '../data/bossDefs.js';
 import { worldRoot } from '../core/Stage.js';
 import { SHARED_LINES } from '../data/npcDefs.js';
 import { player } from './Player.js';
@@ -24,6 +27,33 @@ function oniAnim(n, dt) {
 
 const GENTLE_ACTIONS = ['bow', 'wave', null, null];
 
+/**
+ * How far along the journey is, as a single word. Lines in `npcDefs` may carry a
+ * `when` naming one of these, and are then only said at that point.
+ */
+function chapter() {
+  if (bossWon.size >= BOSS_ORDER.length) return 'done';
+  if (gateOpen()) return 'gate';
+  return won.size > 0 ? 'midway' : 'start';
+}
+
+/** A yokai whose game is still unwon, or null when none are left. */
+function unwonGame() {
+  const left = Object.keys(GAMES).filter(k => !won.has(k) && GAMES[k].title);
+  return left.length ? left[Math.floor(Math.random() * left.length)] : null;
+}
+
+/** A villager pointing you at something you have not done yet. */
+function hintLine() {
+  const k = unwonGame();
+  if (!k) {
+    return gateOpen()
+      ? ['The gate on the far hill is open. Whatever waits behind it has been waiting a long while.', 'bow', '門']
+      : null;
+  }
+  return [`They say ${GAMES[k].title} is still unplayed. Someone out there is waiting for a worthy hand.`, 'wave', '?'];
+}
+
 class NPC {
   constructor(def, dir, fwd) {
     this.def = def;
@@ -39,10 +69,23 @@ class NPC {
     worldRoot.add(this.h.root);
     this.b.sync();
   }
+  /** Lines that fit where the journey has got to. A line with no `when` always fits. */
+  linesNow() {
+    const now = chapter();
+    const fits = l => !l[3] || l[3] === now;
+    const own = this.def.lines.filter(fits);
+    return own.length ? own : this.def.lines;
+  }
   pickLine() {
-    const pool = Math.random() < 0.28 ? SHARED_LINES : this.def.lines;
+    // Villagers who know things sometimes point you somewhere instead.
+    if (this.def.hints && Math.random() < 0.34) {
+      const hint = hintLine();
+      if (hint) return hint;
+    }
+    const pool = Math.random() < 0.28 ? SHARED_LINES.filter(l => !l[3] || l[3] === chapter()) : this.linesNow();
+    const use = pool.length ? pool : this.def.lines;
     let line;
-    for (let i = 0; i < 20; i++) { line = pool[Math.floor(Math.random() * pool.length)]; if (!this.recent.includes(line)) break; }
+    for (let i = 0; i < 20; i++) { line = use[Math.floor(Math.random() * use.length)]; if (!this.recent.includes(line)) break; }
     this.recent.push(line);
     if (this.recent.length > 4) this.recent.shift();
     return line;
@@ -103,4 +146,4 @@ class NPC {
   }
 }
 
-export { GENTLE_ACTIONS, NPC, oniAnim };
+export { GENTLE_ACTIONS, NPC, chapter, hintLine, oniAnim, unwonGame };
