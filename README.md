@@ -8,6 +8,9 @@ gate on the far hill, and two great yokai are waiting behind it — each fought 
 sealed arena of its own. Fell them both and the journey is told back as an ending
 cutscene, brushed in sumi-e ink.
 
+Along the way there are twelve keepsakes left in chests, two buildings you can walk
+into, and any cat or dog on the planet will come with you if you ask it nicely.
+
 ## Screenshots
 
 ![The planet, the rōnin, and the wolf that walks with him](docs/screenshots/planet.png)
@@ -17,10 +20,14 @@ in this repository.
 
 | | |
 |---|---|
-| ![Title card and character select](docs/screenshots/title.png) | ![Talking to a villager](docs/screenshots/dialogue.png) |
-| Pick the rōnin or the kunoichi — a blade and five hearts, or a kunai and quick feet. | The villagers have something to say, typed out a letter at a time. |
-| ![An Onibi mini-game underway](docs/screenshots/challenge.png) | ![A battle with a yokai](docs/screenshots/battle.png) |
-| Ten mini-games. This one wants six lost wisps gathered inside thirty-five seconds. | Or refuse the game and settle it with the blade. Either way the seal is yours. |
+| ![The title screen](docs/screenshots/title.png) | ![Choosing a character](docs/screenshots/characters.png) |
+| The planet keeps turning behind the title, because it is the running game rather than a picture of one. | Each card shows the figure itself in 3D, and the difference between the two as numbers rather than prose. |
+| ![Talking to a villager](docs/screenshots/dialogue.png) | ![An Onibi mini-game underway](docs/screenshots/challenge.png) |
+| The villagers walk their own patch of the planet, and what they say follows how far you have got. | Ten mini-games. This one wants six lost wisps gathered inside thirty-five seconds. |
+| ![A battle with a yokai](docs/screenshots/battle.png) | ![Opening a chest](docs/screenshots/chest.png) |
+| Or refuse the game and settle it with the blade. Hearts sit bottom-left whether or not you are fighting. | Twelve keepsakes are left in chests. None of them do anything, which is rather the point. |
+| ![Inside the tea house](docs/screenshots/interior.png) | ![The pause screen](docs/screenshots/pause.png) |
+| The tea house and the pagoda can be walked into, and nothing follows you in. | Settings, controls, keepsakes and a way out, all behind `Esc`. |
 
 ## Running it
 
@@ -41,7 +48,7 @@ so the tests exercise the real modules.
 npm test
 ```
 
-140 behavioural checks across eight suites. They boot the real game in a fake browser
+221 behavioural checks across fourteen suites. They boot the real game in a fake browser
 (`tests/env.js`) using `vm.SourceTextModule`, which gives every test a fresh module
 graph — nothing in `src/` is instrumented or modified to make them work.
 
@@ -68,17 +75,17 @@ src/
   core/                 renderer, session, boot order, the frame loop, saved preferences
   utils/                maths, randomness, sphere geometry, DOM, scratch vectors
   render/               materials, and the visual effects layer
-  world/                terrain, layout, colliders, props, the sealed gate
-    arenas/             the sealed places the two bosses are fought in
+  world/                terrain, layout, colliders, props, chests, doors, the sealed gate
+    arenas/             the sealed places the bosses are fought in, and the two rooms
   physics/              movement on the surface of a sphere
   entities/             the player, the animals, the yokai, the bosses
     models/             the geometry each one is built from
-  data/                 who the characters are and what they say
+  data/                 who the characters are, what they say, and what is in the chests
   systems/              input, camera, hunting, interaction, spawning, audio
   combat/               battles, boss fights, the katana and the kunai
   challenges/           the challenge flow, the seal book, the ten mini-games
-  ui/                   character select, dialogue, the boss bar, the pause screen
-tests/                  the harness and eight suites
+  ui/                   title and character select, dialogue, hud, pause screen
+tests/                  the harness and fourteen suites
 ```
 
 ### What each area is responsible for
@@ -90,7 +97,9 @@ tests/                  the harness and eight suites
 | `core/Game.js` | The boot order. The first five calls build the world and **must stay in order** — see below. |
 | `core/GameLoop.js` | Timing, hit-stop, and the order systems update in each frame. |
 | `core/Session.js` | Whether play has begun, and whether it is paused. Two flags, owned somewhere, so no module reaches for a global. |
-| `core/save.js` | Settings and key bindings in `localStorage`. Treats storage as something that may be missing or refuse to be written, so a save failure never costs you the game. |
+| `core/save.js` | Settings, key bindings and run progress in `localStorage`. Treats storage as something that may be missing or refuse to be written, so a save failure never costs you the game. |
+| `core/keepsakes.js` | What you are carrying and which chests you have been into. Two sets and the questions worth asking of them, so the chest, the pause screen and the save file need not reach for each other. |
+| `entities/pets.js` | The animal walking with you. Befriending is the whole difference between a cat that wanders off and one that follows you around a planet. It never fights — see the note below. |
 | `utils/` | Pure helpers. `sphere.js` holds the tangent-space maths everything on the planet needs; `scratch.js` holds reused vectors. |
 | `world/` | The planet itself. `terrain.js` answers "how high is the ground here", `colliders.js` answers "can something stand here", `scenery.js` and `props.js` build what you see. |
 | `world/Arena.js` | Sealed boss arenas: hides the planet, swaps the ground under the player, and puts everything back. |
@@ -115,6 +124,12 @@ their own `mulberry32` instance. Calling `rr` or `rand` from `utils/random.js` i
 arena code — including indirectly, via a builder in `world/props.js` that uses them —
 changes what the rest of the game rolls afterwards. `tests/arena.test.js` checks this.
 
+**Anything placed in the world must earn its draw from the seeded stream.** Chests and
+room interiors build from their own `mulberry32`, as the boss arenas already did, and
+the chests are placed after everything else. An earlier attempt reserved their ground
+before the petals were scattered, which changed how many draws the petals consumed and
+quietly altered a yokai's footwork two test suites away.
+
 **Module-level code runs on import.** Anything that needs the world to exist belongs
 in an init function called from `Game.js`, not at module scope — at module scope it
 runs mid-import, before its dependencies are ready.
@@ -126,13 +141,13 @@ runs mid-import, before its dependencies are ready.
 | `W A S D` / arrows | walk |
 | `Shift` | sprint |
 | `Space` | jump |
-| `E` | talk, or accept a challenge |
 | Left click | attack — a sword combo, or a thrown kunai |
 | `Q` | shadow dash (the kunoichi only) |
 | `Alt` | dodge roll (the rōnin only) |
 | Right-drag / wheel | look / zoom |
 | `M` | mute |
-| `Esc` | pause — settings, controls, forfeit or quit |
+| `E` | talk, accept a challenge, open a chest, step into a building, befriend an animal |
+| `Esc` | pause — settings, controls, keepsakes, forfeit or quit |
 
 Every binding above can be changed from the pause screen, and is remembered between
 visits.

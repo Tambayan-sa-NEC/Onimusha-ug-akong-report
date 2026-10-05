@@ -12,6 +12,7 @@ import { tangentA } from '../utils/scratch.js';
 import { signedAngle } from '../utils/sphere.js';
 import { SPAWN_FWD } from '../world/layout.js';
 import { heightAt } from '../world/terrain.js';
+import { arena } from '../world/Arena.js';
 
 const V3 = THREE.Vector3;
 
@@ -28,7 +29,12 @@ function updateCamera(dt, t) {
     const a = signedAngle(cam.fwd, b.fwd, up);
     if (Math.abs(a) < 2.3) cam.fwd.applyAxisAngle(up, a * damp(1.6, dt));
   }
-  _desired.copy(P).addScaledVector(up, CFG.camHeight).addScaledVector(cam.fwd, -CFG.camDist);
+  // Indoors the camera has to come in close, or it ends up outside the wall looking
+  // at the back of it. The player's own camera distance is left alone.
+  const room = arena.active && arena.active.isRoom ? arena.active : null;
+  const dist = room ? Math.min(CFG.camDist, room.radius * 0.42) : CFG.camDist;
+  const high = room ? Math.min(CFG.camHeight, 2.4) : CFG.camHeight;
+  _desired.copy(P).addScaledVector(up, high).addScaledVector(cam.fwd, -dist);
   _cdir.copy(_desired).normalize();
   const minH = heightAt(_cdir) + 1.2;                               // don't clip into hills
   if (_desired.length() < minH) _desired.copy(_cdir).multiplyScalar(minH);

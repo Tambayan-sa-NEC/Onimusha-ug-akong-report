@@ -14,6 +14,7 @@ import { angleBetween } from '../utils/math.js';
 import { rr } from '../utils/random.js';
 import { vecB } from '../utils/scratch.js';
 import { tangentToward } from '../utils/sphere.js';
+import { indoors } from '../world/houses.js';
 
 const V3 = THREE.Vector3;
 
@@ -50,6 +51,9 @@ function endHunt(h, rest) {
   if (h.state === 'hunt') { h.state = 'idle'; h.timer = rr(1, 3); }   // hand the fox back its own moods
 }
 function updateHunts(dt) {
+  // A room is a refuge: rooms sit on real directions of the same sphere, so without
+  // this a yokai would simply walk in after you.
+  if (indoors()) { if (hunter) endHunt(hunter, HUNT.rest); return; }
   const P = player.body.obj.position;
   if (huntPeace > 0) huntPeace -= dt;
   for (const h of hosts) {

@@ -8,6 +8,7 @@ import { session } from '../core/Session.js';
 import { player } from '../entities/Player.js';
 import { emote } from '../render/effects/emotes.js';
 import { HUNT } from './hunting.js';
+import { indoors } from '../world/houses.js';
 import { takeInteract } from './input.js';
 import { closeDialog, dlg, promptBox, ui } from '../ui/dialog.js';
 import { critters, npcs } from '../world/entities.js';
@@ -15,7 +16,10 @@ import { critters, npcs } from '../world/entities.js';
 function updateInteraction(dt) {
   const P = player.body.obj.position;
   let near = null, bd = Infinity;
-  for (const h of hosts) {
+  // Indoors, the planet is out of reach — nothing standing on it can be talked to,
+  // challenged, or walked into, however near its direction happens to be.
+  const inside = indoors();
+  for (const h of inside ? [] : hosts) {
     const d = h.b.dist(P);
     h.chCd = Math.max(0, (h.chCd || 0) - dt);
     if (d > CFG.challengeRange + 3) h.announced = false;
@@ -27,6 +31,8 @@ function updateInteraction(dt) {
     if (d < bd) { bd = d; near = h; }
   }
   if (session.started && !ch.active) for (const n of npcs) {
+    if (inside && !n.roomId && !n.isChest) continue;      // room fixtures only
+    if (inside && n.isChest && !String(n.id).startsWith('room-')) continue;
     if (n.def.game) continue;
     if (n.isChest) {   // chests have a shorter reach than a conversation
       const d = n.b.dist(P);
@@ -37,7 +43,7 @@ function updateInteraction(dt) {
     if (d < CFG.talkRange && d < bd) { bd = d; near = n; }
   }
   // Cats and dogs can be talked round, at arm's length rather than across a field.
-  if (session.started && !ch.active) for (const c of critters) {
+  if (session.started && !ch.active && !inside) for (const c of critters) {
     if (!c.greetable) continue;
     const d = c.b.dist(P);
     if (d < CFG.talkRange - 0.6 && d < bd) { bd = d; near = c; }
@@ -54,7 +60,8 @@ function updateInteraction(dt) {
     ui.prompt.classList.toggle('show', !!label);
   }
   if (takeInteract()) {
-    if (near) { if (near.def.game) startChallenge(near); else near.interact(); }
+    // Critters have no challenge definition at all, so ask before reaching for one.
+    if (near) { if (near.def && near.def.game) startChallenge(near); else near.interact(); }
   }
   if (dlg.npc) {
     dlg.shown += dt * CFG.textSpeed;   // typewriter

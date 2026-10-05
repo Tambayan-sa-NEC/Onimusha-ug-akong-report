@@ -34,7 +34,7 @@ const teahouse = makeInterior({
   id: 'teahouse',
   name: 'Hanako’s Tea House',
   centre: new V3(-0.31, 0.74, -0.59).normalize(),
-  radius: 7,
+  radius: 9,
   seed: 0x7EA1,
   sky: '#d9c7a6',            // lamplight on paper walls
   floorA: '#cbb27e', floorB: '#bda36f',    // tatami, woven in two tones
@@ -57,7 +57,7 @@ const pagodaRoom = makeInterior({
   id: 'pagodaRoom',
   name: 'The Pagoda',
   centre: new V3(0.78, 0.22, -0.58).normalize(),
-  radius: 8,
+  radius: 10,
   seed: 0x7A60,
   sky: '#b9a894',
   floorA: '#7a6650', floorB: '#6d5b47',    // dark boards

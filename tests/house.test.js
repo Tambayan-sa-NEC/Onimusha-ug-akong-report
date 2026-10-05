@@ -136,6 +136,45 @@ await test('the indoor chest hands over its keepsake like any other', async () =
   assert(T.hasItem(c.itemId), 'and now carrying what was in the tea house');
 });
 
+/* ---------------------------- a room is a refuge ---------------------------- */
+
+await test('stepping inside calls off a yokai that was chasing you', async () => {
+  const { g, T } = await playing();
+  const host = T.hosts.find(h => h.def && h.def.aggro);
+  assert(host, 'there are yokai that give chase');
+  T.startHunt(host);
+  assert(T.hunter, 'one is after you');
+  T.doors.find(d => d.roomId === 'teahouse').interact();
+  eq(T.hunter, null, 'and gives up at the door');
+  assert(T.indoors(), 'you are inside');
+});
+
+await test('nothing out on the planet is in reach while you are indoors', async () => {
+  const { g, T } = await playing();
+  // Stand a yokai exactly where the room is, which the sphere allows.
+  const host = T.hosts.find(h => h.def && h.def.game);
+  const room = T.ARENAS.teahouse;
+  T.doors.find(d => d.roomId === 'teahouse').interact();
+  host.b.dir.copy(room.centre); host.b.fixFwd(); host.b.sync();
+  host.chCd = 0; host.announced = true;
+  g.run(0.5);
+  eq(T.ch.active, null, 'it cannot challenge you through the wall');
+  const p = T.promptBox.label;
+  assert(!p || !p.includes(host.def.name), `the prompt should not offer it, said "${p}"`);
+});
+
+await test('the room chest is reachable indoors, and the outdoor ones are not', async () => {
+  const { g, T } = await playing();
+  const room = T.ARENAS.teahouse;
+  const outside = T.chests[0];
+  T.doors.find(d => d.roomId === 'teahouse').interact();
+  outside.b.dir.copy(room.centre); outside.b.sync();   // even sitting in the same place
+  g.run(0.4);
+  const p = T.promptBox.label || '';
+  assert(!/Open the chest/.test(p) || T.roomFixtures.get('teahouse').chest.b.dist(T.player.body.obj.position) < 3,
+    'an outdoor chest is not offered from inside');
+});
+
 /* -------------------------------- good manners ------------------------------- */
 
 await test('a door will not open in the middle of a challenge', async () => {

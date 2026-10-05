@@ -43,33 +43,39 @@ function makeInterior(o) {
   /** Flat inside the walls, nothing outside them. */
   const height = d => (angleBetween(d, centre) > rim ? R - 10 : FLOOR);
 
-  /** Posts and panels around the rim: a room, rather than a floating platform. */
-  function walls(g, rnd) {
-    const n = 20;
+  /**
+   * Walls around the rim.
+   *
+   * `buildBarrier` is the arenas' translucent shimmer, which is right for sealing a
+   * boss fight and wrong for a tea house, so these are solid panels. Each is stood up
+   * by pointing its `up` along the surface normal and then facing it at the middle of
+   * the room, which leaves its width running tangentially without any angle maths.
+   */
+  function walls(g) {
+    const mid = centre.clone().multiplyScalar(FLOOR + 1.5);
+    const n = 28;
+    const panelW = (2 * Math.PI * radius / n) * 1.14;      // overlap, so no gaps show
     for (let i = 0; i < n; i++) {
       const b = (i / n) * Math.PI * 2;
-      const d = spot(b, radius * 0.99);
-      const post = part(GEO.box, o.beam, [0, 0, 0], [0.22, 3.0, 0.22]);
-      const panel = part(GEO.box, o.wall, [0, 0, 0], [radius * 6.3 / n, 2.8, 0.1]);
-      for (const [mesh, lift] of [[post, 1.5], [panel, 1.45]]) {
-        const p = d.clone().multiplyScalar(height(d) + lift);
-        mesh.position.copy(p);
-        mesh.lookAt(p.clone().add(d));          // stand it up off the surface
-        mesh.rotateX(Math.PI / 2);
-        mesh.rotateY(-b);
-        g.add(mesh);
-      }
+      const d = spot(b, radius * 0.98);
+      const p = d.clone().multiplyScalar(height(d) + 1.5);
+      const panel = part(GEO.box, o.wall, [0, 0, 0], [panelW, 3.0, 0.12]);
+      panel.up.copy(d);
+      panel.position.copy(p);
+      panel.lookAt(mid);
+      g.add(panel);
     }
-    // A low ceiling beam or two, for the feeling of being indoors.
-    for (let i = 0; i < 3; i++) {
-      const d = spot(rnd() * 6.283, radius * (0.1 + rnd() * 0.5));
-      const p = d.clone().multiplyScalar(height(d) + 3.0);
-      const beam = part(GEO.box, o.beam, [0, 0, 0], [radius * 1.8, 0.18, 0.2]);
-      beam.position.copy(p);
-      beam.lookAt(p.clone().add(d));
-      beam.rotateX(Math.PI / 2);
-      beam.rotateY(rnd() * 3.14);
-      g.add(beam);
+    // Posts on the corners, to read as a building rather than a drum.
+    for (let i = 0; i < 8; i++) {
+      const b = (i / 8) * Math.PI * 2;
+      const d = spot(b, radius * 0.96);
+      const p = d.clone().multiplyScalar(height(d));
+      const post = part(GEO.box, o.beam, [0, 0, 0], [0.26, 3.2, 0.26]);
+      post.position.copy(p);
+      post.lookAt(p.clone().add(d));
+      post.rotateX(Math.PI / 2);
+      post.translateY(1.6);
+      g.add(post);
     }
   }
 
@@ -77,7 +83,7 @@ function makeInterior(o) {
     const g = new THREE.Group();
     const rnd = mulberry32(o.seed);          // this room's own stream, never the world's
     g.add(buildArenaFloor({ centre, radius, height }, o.floorA, o.floorB));
-    walls(g, rnd);
+    walls(g);
     if (o.furnish) o.furnish(g, { spot, height, rnd, rr: (a, b) => a + (b - a) * rnd() });
     return g;
   }

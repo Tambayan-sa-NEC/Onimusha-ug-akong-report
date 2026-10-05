@@ -103,6 +103,19 @@ await test('a yokai on the hunt is not somebody to befriend', async () => {
   eq(c.prompt(), '', 'and it offers nothing');
 });
 
+await test('regression: pressing E beside an animal befriends it rather than throwing', async () => {
+  const { g, T } = await playing('samurai');
+  const c = stray(T);
+  // Stand the player right next to it, the way you would walking past.
+  const pb = T.player.body;
+  pb.dir.copy(T.offsetDir(c.b.dir, 0.4, 1.2 / T.R, new T.THREE.Vector3()));
+  pb.fixFwd(); pb.lift = 0; pb.vy = 0; pb.grounded = true; pb.sync();
+  g.run(0.2);
+  g.press('KeyE');
+  g.run(0.2);                       // threw here: a critter has no def to read .game from
+  eq(T.pet.animal, c, 'the animal came along');
+});
+
 /* -------------------------------- reactions --------------------------------- */
 
 await test('the companion is pleased when a seal is won', async () => {

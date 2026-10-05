@@ -12,6 +12,7 @@ import { GEO, part } from '../render/materials.js';
 import { INDOOR_ITEMS } from '../data/itemDefs.js';
 import { SurfaceBody } from '../physics/SurfaceBody.js';
 import { Sound } from '../systems/audio.js';
+import { HUNT, endHunt, hunter } from '../systems/hunting.js';
 import { openDialog } from '../ui/dialog.js';
 import { mulberry32 } from '../utils/random.js';
 import { randTangent } from '../utils/sphere.js';
@@ -57,6 +58,9 @@ function makeDoor(roomId, dir, fwd, label) {
     },
     interact() {
       if (ch.active || arena.active) return;        // not mid-challenge, not already away
+      // A room is a refuge. Rooms sit on real directions of the same sphere, so a
+      // yokai already chasing you would otherwise walk in after you.
+      if (hunter) endHunt(hunter, HUNT.rest);
       cameFrom = door.b.dir.clone();
       arena.enter(roomId, cameFrom);
       Sound.sfx('talk');

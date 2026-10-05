@@ -298,7 +298,7 @@ My suggestions, not from your list. Pick up or discard freely.
 
 ## Working notes
 
-- Tests: `npm test` — 217 checks across fifteen suites. Run before and after each feature.
+- Tests: `npm test` — 221 checks across fourteen suites. Run before and after each feature.
 - `node --experimental-vm-modules tests/rebaseline.js` shows what moved in the world;
   only `--write` rewrites the baseline.
 - `tests/world.test.js` failing after a world change is expected; regenerate
