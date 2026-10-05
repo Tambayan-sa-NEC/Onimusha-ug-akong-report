@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="styles/hud.css">
 <link rel="stylesheet" href="styles/challenges.css">
 <link rel="stylesheet" href="styles/ending.css">
+<link rel="stylesheet" href="styles/pause.css">
 <!-- An import map keeps the bare "three" specifier working in the browser with no build step.
      The same specifier resolves from node_modules when the tests run under Node. -->
 <script type="importmap">
@@ -26,7 +27,7 @@
   Fierce yokai give chase — fight, outrun, or <kbd>E</kbd> to offer a game<br>
   Five seals open the sealed gate on the far hill<br>
   Right-drag to look, wheel to zoom, <kbd>M</kbd> sound<br>
-  <kbd>Esc</kbd> forfeit a challenge, or step back to character select
+  <kbd>Esc</kbd> pause — settings, controls, forfeit or quit
 </div>
 <div id="prompt"></div>
 <div id="seals" title="Yokai seals: win each yokai's challenge"></div>
@@ -37,6 +38,7 @@
 <div id="hurtFx"></div>
 <div id="dialog"><div id="dseal">侍</div><div id="dname"></div><div id="dtext"></div></div>
 <div id="ending"></div>
+<div id="pause"></div>
 <div id="overlay">
   <div class="card">
     <h1>Onimusha</h1>

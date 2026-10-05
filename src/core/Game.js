@@ -6,6 +6,7 @@ import { equipWeapon } from '../combat/katana.js';
 import { startLoop } from './GameLoop.js';
 import { spawnWorld } from '../systems/spawn.js';
 import { buildMenu } from '../ui/characterSelect.js';
+import { initPause } from '../ui/pause.js';
 import { arena } from '../world/Arena.js';
 import { createGate } from '../world/SealedGate.js';
 import { createLayout } from '../world/layout.js';
@@ -28,6 +29,7 @@ function startGame() {
   equipWeapon();      // put a blade in the default character's hand
   buildSeals();       // draw the empty seal book
   buildMenu();        // the character select screen, up before the first frame
+  initPause();        // restore saved settings and keybinds before anything reads them
   void arena;          // the arena system is wired in by the gate
   startLoop();
 }

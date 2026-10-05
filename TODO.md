@@ -4,7 +4,8 @@ Features to build, written out so each one can be picked up without rereading th
 game. Your ideas are in **Planned features**; ideas I suggested are in **Worth
 considering**, kept separate so it stays clear which is which.
 
-Nothing here is started. Checkboxes are for tracking as work begins.
+**Done so far:** the *Foundations* and all of **#2 Pause screen** (including settings and
+keymaps). Everything else is still open.
 
 ---
 
@@ -34,9 +35,10 @@ keymaps, HUD — belongs in `ui/`, and reads game state rather than reaching int
 **4. `input.js` is the only module that touches the keyboard and mouse.** Everything
 else reads its state. Remappable keys must not change that.
 
-**There is no persistence of any kind yet.** No `localStorage`, no save file — closing
-the tab loses everything. Settings, keymaps, chests, and pet state all need somewhere to
-live. See *Foundations* below.
+**Persistence now exists, but only for preferences.** `core/save.js` keeps settings and
+key bindings in `localStorage`. Progress — seals won, bosses felled, chests opened, pet
+state — is still lost when the tab closes, and would be the natural next thing to add to
+the same file.
 
 ---
 
@@ -44,9 +46,9 @@ live. See *Foundations* below.
 
 Later items lean on earlier ones, so building in roughly this order avoids rework:
 
-1. **Foundations** — persistence + the `Esc` decision. Small, unblocks much of the rest.
-2. **Pause screen** (#2) — needs both foundations.
-3. **Settings & keymaps** — ship inside the pause screen.
+1. ~~**Foundations** — persistence + the `Esc` decision.~~ **Done.**
+2. ~~**Pause screen** (#2)~~ **Done.**
+3. ~~**Settings & keymaps**~~ **Done.**
 4. **HUD** (#1), **main menu** (#3), **character select** (#4) — presentation, independent.
 5. **NPCs** (#5), **houses** (#6), **chests** (#7) — all touch world generation; do them
    together so the fingerprint baseline is regenerated once, not three times.
@@ -58,23 +60,16 @@ Later items lean on earlier ones, so building in roughly this order avoids rewor
 
 Not features in themselves — two small pieces of groundwork that several features need.
 
-- [ ] **A persistence layer.** One small module (`src/core/save.js`) that reads and
-      writes a single versioned JSON blob in `localStorage`. Everything that must
-      survive a reload goes through it: settings, keymaps, seals won, bosses felled,
-      chests opened, pet state. Decide early what is *run state* (resets each session)
-      versus *saved state*, or this gets muddy fast. Include a "reset progress" path —
-      it is much harder to retrofit.
+- [x] **A persistence layer.** *Done — `src/core/save.js` keeps one versioned JSON blob
+      in `localStorage`, with settings and key bindings in it, and a reset path.*
+      **Still open:** progress (seals won, bosses felled, chests opened, pet state) does
+      not go through it yet. When it does, keep the line between *run state* and *saved
+      state* explicit, or this gets muddy fast.
 
-- [ ] **Resolve the `Esc` conflict — decide before building the pause screen.**
-      `Esc` is already bound twice in `systems/input.js`: it forfeits a running
-      challenge, and otherwise returns to character select. A pause screen traditionally
-      wants that key. Options:
-      - `Esc` pauses; forfeit moves to a confirm step inside the pause screen.
-      - `Esc` keeps its current meaning; pause binds to `P`.
-      - Context-sensitive: forfeit during a challenge, pause otherwise.
-
-      The first is the most conventional and the least surprising, but it is a real
-      design decision, not an implementation detail — pick deliberately.
+- [x] **Resolve the `Esc` conflict.** *Done — `Esc` now always opens the pause screen.
+      Forfeiting moved inside it as its own button, shown only while a challenge is
+      running. The two tests that encoded the old behaviour were rewritten rather than
+      deleted, and `challengeKey` no longer consumes `Escape`.*
 
 ---
 
@@ -102,43 +97,49 @@ static controls card in `index.html`.
 
 ---
 
-### 2. Pause screen
+### 2. Pause screen — **done**
 
-- [ ] **Resume.**
-- [ ] **Settings** — see below.
-- [ ] **Keymaps** — see below.
-- [ ] **Quit** — back to the main menu, with a confirm step. `toMenu()` in
-      `ui/characterSelect.js` already does the teardown correctly (clears input, ends a
-      hunt, clears kunai, closes dialogue); reuse it rather than writing a second path.
-- [ ] Actually pause: freeze `core/GameLoop.js`, and make sure the first frame after
-      resuming does not receive one enormous `dt`. A large delta will teleport bodies
-      through colliders.
-- [ ] Decide whether pausing mid-challenge is allowed. Several mini-games are timed, so
-      pausing is either a fair reprieve or free extra time — pick one on purpose.
+Built in `src/ui/pause.js`, styled in `styles/pause.css`, covered by `tests/pause.test.js`.
 
-*New file:* `src/ui/pause.js`. *Needs:* both foundations.
+- [x] **Resume.**
+- [x] **Settings** — see below.
+- [x] **Keymaps** — see below.
+- [x] **Quit** — back to the main menu, behind a confirm step, reusing `toMenu()` in
+      `ui/characterSelect.js` for the teardown rather than writing a second path. A live
+      challenge is torn down first, since `toMenu()` refuses to run while one is active.
+- [x] Actually pause: `core/GameLoop.js` skips the whole update block but keeps
+      rendering and keeps `last` advancing, so resuming never hands the first frame a
+      delta the size of the pause. A large delta would teleport bodies through colliders.
+- [x] Decide whether pausing mid-challenge is allowed. *Allowed, and the timer genuinely
+      stops rather than running on. That makes pausing a reprieve in the ten timed
+      mini-games — worth revisiting if it turns out to make them too easy.*
 
-#### Settings
-- [ ] Audio: separate volumes for music and effects. Only a global mute (`M`) exists
-      today, in `systems/audio.js`.
-- [ ] Camera: invert look, sensitivity, default distance. `CFG.camDist` is already a
-      tunable in `config/settings.js`.
-- [ ] Accessibility: reduced motion (falling petals, screen shake, hit-stop), typewriter
-      speed for dialogue — it is fixed at `dt * 45` in `systems/interaction.js` — and a
-      larger-text option.
-- [ ] Persist all of it, and expose a reset-to-defaults.
+*Still open:* a gamepad has no way into any of this.
+
+#### Settings — **done**
+- [x] Audio: a master volume and a mute that the pause screen can set directly.
+      *Separate music and effect buses are still open — the oscillators in
+      `systems/audio.js` all share one gain node today.*
+- [x] Camera: invert look and sensitivity.  *Default camera distance is still not
+      exposed, though `CFG.camDist` is ready for it.*
+- [x] Accessibility: reduced motion (drops the hit-stop freeze-frame and the drifting
+      petals) and dialogue typewriter speed.  *A larger-text option is still open.*
+- [x] Persist all of it, with a reset-to-defaults.
 
 Most of these map onto `CFG` already. Resist scattering new globals; extend `CFG` and
 let the settings screen write to it.
 
-#### Keymaps
-- [ ] Show the current bindings — this replaces the controls card in `index.html`.
-- [ ] Allow rebinding, with detection of conflicts and a reset-to-defaults.
-- [ ] Keep `input.js` the single owner of input. Bindings become data it reads, rather
-      than the `e.code === 'KeyE'` literals hard-coded through it today.
-- [ ] Remember that the two characters have different abilities (`Q` shadow dash for the
-      kunoichi, `Alt` dodge roll for the rōnin), so the screen is per-character, not one
-      flat list.
+#### Keymaps — **mostly done**
+- [x] Show the current bindings.
+- [x] Allow rebinding, with conflict detection and a reset-to-defaults.
+- [x] Keep `input.js` the single owner of input. Bindings live in `config/keys.js` as
+      data; `input.js` reads them instead of hard-coding `e.code === 'KeyE'`.
+- [ ] **Still open:** the list is flat, so the kunoichi's dash and the rōnin's roll are
+      both always shown, each labelled with whose move it is. A per-character view would
+      read better.
+- [ ] **Still open:** rebinding takes a single key, so an action cannot be given a second
+      binding from the UI — the defaults that have two (`W`/`↑`) can only lose one.
+      The data layer supports several; only the editor does not.
 
 ---
 
@@ -291,7 +292,7 @@ My suggestions, not from your list. Pick up or discard freely.
 
 ## Working notes
 
-- Tests: `npm test` — 113 checks across seven suites. Run before and after each feature.
+- Tests: `npm test` — 140 checks across eight suites. Run before and after each feature.
 - `tests/world.test.js` failing after a world change is expected; regenerate
   `tests/baseline.json` deliberately and in its own commit.
 - The game has no build step and one devDependency (`three`, used only by the tests).

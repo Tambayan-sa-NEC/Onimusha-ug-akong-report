@@ -3,6 +3,7 @@
  */
 import { last } from '../core/GameLoop.js';
 import { player } from '../entities/Player.js';
+import { CFG } from '../config/settings.js';
 import { clamp } from '../utils/math.js';
 
 const Sound = {
@@ -13,7 +14,7 @@ const Sound = {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     const ctx = this.ctx = new AC();
-    this.master = ctx.createGain(); this.master.gain.value = 0.55; this.master.connect(ctx.destination);
+    this.master = ctx.createGain(); this.master.gain.value = this.muted ? 0 : CFG.volume; this.master.connect(ctx.destination);
     // echo send
     const delay = ctx.createDelay(1), fb = ctx.createGain(), wet = ctx.createGain();
     delay.delayTime.value = 0.42; fb.gain.value = 0.38; wet.gain.value = 0.35;
@@ -98,9 +99,20 @@ const Sound = {
       case 'swish': this.noiseBurst(0.16, 2400, 0.22); break;
     }
   },
+  /** Master output level, 0..1. Remembered even while muted. */
+  setVolume(v) {
+    CFG.volume = clamp(Number(v) || 0, 0, 1);
+    if (this.master && !this.muted) this.master.gain.setTargetAtTime(CFG.volume, this.ctx.currentTime, 0.1);
+  },
+  setMuted(on) {
+    this.muted = !!on;
+    CFG.muted = this.muted;
+    if (this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : CFG.volume, this.ctx.currentTime, 0.1);
+  },
   toggleMute() {
     this.muted = !this.muted;
-    if (this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : 0.55, this.ctx.currentTime, 0.1);
+    CFG.muted = this.muted;
+    if (this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : CFG.volume, this.ctx.currentTime, 0.1);
   },
 };
 /** 0..1 volume falloff from the player. */

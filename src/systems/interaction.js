@@ -46,7 +46,7 @@ function updateInteraction(dt) {
     if (near) { if (near.def.game) startChallenge(near); else near.interact(); }
   }
   if (dlg.npc) {
-    dlg.shown += dt * 45;   // typewriter
+    dlg.shown += dt * CFG.textSpeed;   // typewriter
     ui.text.textContent = dlg.full.slice(0, Math.floor(dlg.shown));
     dlg.timer -= dt;
     if (dlg.timer <= 0 || dlg.npc.b.dist(player.body.obj.position) > CFG.talkRange + 2.5) closeDialog();

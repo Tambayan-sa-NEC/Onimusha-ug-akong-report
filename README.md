@@ -41,7 +41,7 @@ so the tests exercise the real modules.
 npm test
 ```
 
-113 behavioural checks across seven suites. They boot the real game in a fake browser
+140 behavioural checks across eight suites. They boot the real game in a fake browser
 (`tests/env.js`) using `vm.SourceTextModule`, which gives every test a fresh module
 graph — nothing in `src/` is instrumented or modified to make them work.
 
@@ -61,10 +61,11 @@ styles/
   hud.css               everything drawn over the game while you play
   challenges.css        the widgets the mini-games build themselves from
   ending.css            the sumi-e victory cutscene
+  pause.css             the pause screen, settings and controls
 src/
   main.js               entry point: hands off to Game
-  config/               tunable numbers, nothing depends on anything
-  core/                 renderer, session, boot order, the frame loop
+  config/               tunable numbers and key bindings, nothing depends on anything
+  core/                 renderer, session, boot order, the frame loop, saved preferences
   utils/                maths, randomness, sphere geometry, DOM, scratch vectors
   render/               materials, and the visual effects layer
   world/                terrain, layout, colliders, props, the sealed gate
@@ -76,19 +77,20 @@ src/
   systems/              input, camera, hunting, interaction, spawning, audio
   combat/               battles, boss fights, the katana and the kunai
   challenges/           the challenge flow, the seal book, the ten mini-games
-  ui/                   character select, dialogue, the boss bar
-tests/                  the harness and seven suites
+  ui/                   character select, dialogue, the boss bar, the pause screen
+tests/                  the harness and eight suites
 ```
 
 ### What each area is responsible for
 
 | Area | Responsibility |
 |---|---|
-| `config/` | Tunable values only — `settings.js` for gameplay numbers, `characters.js` for the two playable characters. No logic, no imports. |
+| `config/` | Tunable values only — `settings.js` for gameplay numbers and the player-facing settings, `characters.js` for the two playable characters, `keys.js` for what each action is bound to. No logic, no imports. |
 | `core/Stage.js` | The three.js plumbing: renderer, scene, camera, lights, resize. Nothing else touches them. |
 | `core/Game.js` | The boot order. The first five calls build the world and **must stay in order** — see below. |
 | `core/GameLoop.js` | Timing, hit-stop, and the order systems update in each frame. |
-| `core/Session.js` | Whether play has begun. One flag, owned somewhere, so no module reaches for a global. |
+| `core/Session.js` | Whether play has begun, and whether it is paused. Two flags, owned somewhere, so no module reaches for a global. |
+| `core/save.js` | Settings and key bindings in `localStorage`. Treats storage as something that may be missing or refuse to be written, so a save failure never costs you the game. |
 | `utils/` | Pure helpers. `sphere.js` holds the tangent-space maths everything on the planet needs; `scratch.js` holds reused vectors. |
 | `world/` | The planet itself. `terrain.js` answers "how high is the ground here", `colliders.js` answers "can something stand here", `scenery.js` and `props.js` build what you see. |
 | `world/Arena.js` | Sealed boss arenas: hides the planet, swaps the ground under the player, and puts everything back. |
@@ -98,7 +100,7 @@ tests/                  the harness and seven suites
 | `systems/` | Cross-cutting per-frame concerns. `input.js` is the only module that touches the keyboard and mouse; everything else reads its state. |
 | `combat/` | `battle.js` is an ordinary fight; `bossBattle.js` extends it. `katana.js` and `kunai.js` are the two characters' weapons. |
 | `challenges/` | The flow that runs any challenge, the seal book, and ten independent mini-games. |
-| `ui/` | DOM only. No module outside `ui/` writes to the document. `ending.js` paints the sumi-e victory cutscene to a canvas when both bosses fall. |
+| `ui/` | DOM only. No module outside `ui/` writes to the document. `ending.js` paints the sumi-e victory cutscene to a canvas when both bosses fall; `pause.js` holds the pause screen, the settings and the keymap editor. |
 
 ## Three things worth knowing before changing code
 
@@ -130,7 +132,10 @@ runs mid-import, before its dependencies are ready.
 | `Alt` | dodge roll (the rōnin only) |
 | Right-drag / wheel | look / zoom |
 | `M` | mute |
-| `Esc` | forfeit a challenge, or step back to character select |
+| `Esc` | pause — settings, controls, forfeit or quit |
+
+Every binding above can be changed from the pause screen, and is remembered between
+visits.
 
 ## Assets
 

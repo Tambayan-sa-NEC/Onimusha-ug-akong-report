@@ -22,6 +22,11 @@ async function playing(id) {
   for (const h of T.hosts) h.chCd = 1e9;
   return { g, T, els };
 }
+/** A button on the pause card, by its label. */
+function pauseButton(els, label) {
+  const card = els('pause').children[0];
+  return card && card.children.find(c => c.tagName === 'BUTTON' && c.textContent === label);
+}
 function placePlayer(T, host, dist, face) {
   const pb = T.player.body;
   for (let i = 0; i < 400; i++) {
@@ -293,20 +298,26 @@ await test('the wolf cannot touch combat, collisions or difficulty', async () =>
 
 /* -------------------- returning to the menu, and stale state ------------------- */
 
-await test('Escape goes back to the select screen', async () => {
+await test('Escape pauses, and quitting from there goes back to the select screen', async () => {
   const { g, T, els } = await playing('samurai');
   g.run(0.5);
   g.press('Escape');
+  eq(T.started, true, 'pausing alone does not end the run');
+  eq(T.pause.open, true, 'the pause screen is up');
+  pauseButton(els, 'Quit to menu').dispatch('click');
+  pauseButton(els, 'Quit to menu').dispatch('click');   // and again to confirm
   eq(T.started, false, 'back on the menu');
   assert(!els('overlay').className.includes('hide'), 'overlay is up again');
 });
 
-await test('Escape forfeits a challenge instead of leaving it', async () => {
-  const { g, T } = await playing('samurai');
+await test('Escape in a challenge pauses it, and forfeiting is a deliberate choice', async () => {
+  const { g, T, els } = await playing('samurai');
   const host = T.hosts.find(h => h.def.game === 'shell');
   T.startChallenge(host, T.GAMES.shell);
   g.press('Escape');
   eq(T.started, true, 'still playing');
+  eq(T.ch.active.result, null, 'nothing forfeited by the pause itself');
+  pauseButton(els, 'Forfeit challenge').dispatch('click');
   eq(T.ch.active.result, 'lose', 'the challenge was forfeited');
 });
 
@@ -314,7 +325,7 @@ await test('going back to the menu takes the wolf with it', async () => {
   const { g, T } = await playing('samurai');
   assert(T.wolf, 'wolf present');
   const before = T.critters.length;
-  g.press('Escape');
+  T.quitToMenu();
   eq(T.wolf, null, 'wolf gone');
   eq(T.critters.length, before - 1, 'and removed from the world');
 });
@@ -325,7 +336,7 @@ await test('re-selecting leaves nothing of the last character behind', async () 
   pb0.dir.copy(T.offsetDir(pb0.dir, 1, 20 / T.R, new T.THREE.Vector3()));
   pb0.fixFwd(); pb0.sync();
   T.sw.step = 2; T.sw.cd = 1;                      // mid-combo when they quit
-  g.press('Escape');
+  T.quitToMenu();
   T.start('shinobi');
 
   eq(T.player.char.id, 'shinobi', 'now the kunoichi');
@@ -344,7 +355,7 @@ await test('switching back the other way restores the wolf and the sword', async
   T.throwKunai();
   g.run(0.3);
   assert(T.kunai.length > 0, 'a kunai is in the air');
-  g.press('Escape');
+  T.quitToMenu();
   T.start('samurai');
   eq(T.kunai.length, 0, 'her kunai are gone');
   assert(T.wolf, 'his wolf is back');
@@ -353,8 +364,8 @@ await test('switching back the other way restores the wolf and the sword', async
 });
 
 await test('a battle after re-selecting uses the new character sheet', async () => {
-  const { g, T } = await playing('samurai');
-  g.press('Escape');
+  const { T } = await playing('samurai');
+  T.quitToMenu();
   T.start('shinobi');
   for (const h of T.hosts) h.chCd = 1e9;
   const host = T.hosts.find(h => h.def.game === 'iai');

@@ -101,6 +101,23 @@ function finishChallenge() {
     });
   }
 }
+/** Bow out of the running challenge. The frame loop resolves it as a loss. */
+function forfeitChallenge() {
+  const c = ch.active;
+  if (!c || c.done) return false;
+  c.result = 'lose';
+  c.note = 'You bowed out.';
+  return true;
+}
+/** Tear the running challenge down without resolving it, for quitting to the menu. */
+function abandonChallenge() {
+  const c = ch.active;
+  if (!c) return false;
+  c.result = c.result || 'lose';
+  c.done = true;
+  finishChallenge();
+  return true;
+}
 function updateChallenge(dt) {
   const c = ch.active;
   if (!c) return;
@@ -113,9 +130,8 @@ function updateChallenge(dt) {
 function challengeKey(code) {
   const c = ch.active;
   if (!c || c.done) return false;
-  if (code === 'Escape') { c.result = 'lose'; c.note = 'You bowed out.'; return true; }
   if (c.g.key) c.g.key(c, code);
   return c.g.locks && code !== 'KeyM';
 }
 
-export { SEALS_FOR_GATE, bossWon, ch, chUI, challengeKey, el, finishChallenge, gateOpen, hostEmoteH, hosts, inputLocked, resolveChallenge, rpick, setStatus, shuffle, slain, startChallenge, updateChallenge, won };
+export { SEALS_FOR_GATE, abandonChallenge, bossWon, ch, chUI, challengeKey, el, finishChallenge, forfeitChallenge, gateOpen, hostEmoteH, hosts, inputLocked, resolveChallenge, rpick, setStatus, shuffle, slain, startChallenge, updateChallenge, won };

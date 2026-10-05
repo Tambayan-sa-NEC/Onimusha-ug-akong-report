@@ -19,7 +19,7 @@ import { burst } from '../render/effects/sparks.js';
 import { orient } from '../render/materials.js';
 import { Sound } from '../systems/audio.js';
 import { cam } from '../systems/camera.js';
-import { down, takeJump } from '../systems/input.js';
+import { acting, takeJump } from '../systems/input.js';
 import { $ } from '../utils/dom.js';
 import { clamp, damp } from '../utils/math.js';
 import { localPoint } from '../utils/sphere.js';
@@ -85,17 +85,17 @@ function updatePlayer(dt, t) {
   const b = player.body, up = b.dir, h = player.h;
   let ix = 0, iz = 0;
   if (session.started && !inputLocked()) {
-    if (down('KeyW', 'ArrowUp')) iz += 1;
-    if (down('KeyS', 'ArrowDown')) iz -= 1;
-    if (down('KeyD', 'ArrowRight')) ix += 1;
-    if (down('KeyA', 'ArrowLeft')) ix -= 1;
+    if (acting('forward')) iz += 1;
+    if (acting('back')) iz -= 1;
+    if (acting('right')) ix += 1;
+    if (acting('left')) ix -= 1;
   }
   // Camera-relative input on the tangent plane.
   cam.fwd.addScaledVector(up, -cam.fwd.dot(up)).normalize();
   _right.crossVectors(cam.fwd, up);
   _want.set(0, 0, 0).addScaledVector(cam.fwd, iz).addScaledVector(_right, ix);
   if (_want.lengthSq() > 0) _want.normalize();
-  player.sprinting = down('ShiftLeft', 'ShiftRight') && _want.lengthSq() > 0;
+  player.sprinting = acting('sprint') && _want.lengthSq() > 0;
   _want.multiplyScalar((player.sprinting ? CFG.sprint : CFG.walk) * player.char.speed);
 
   player.vel.addScaledVector(up, -player.vel.dot(up));             // keep velocity tangent

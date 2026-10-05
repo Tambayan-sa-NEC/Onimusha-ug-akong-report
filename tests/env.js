@@ -102,6 +102,15 @@ export async function boot({ randomSeed = 7 } = {}) {
   let pending = null;
   const canvas = new El('canvas');
 
+  // A stand-in for localStorage, so saved settings and keybinds can be asserted.
+  const store = new Map();
+  const localStorage = {
+    getItem: k => (store.has(k) ? store.get(k) : null),
+    setItem: (k, v) => { store.set(k, String(v)); },
+    removeItem: k => { store.delete(k); },
+    clear: () => store.clear(),
+  };
+
   // A module namespace is frozen, so work from a mutable copy. The one piece of
   // three that needs a real GPU is swapped out on it.
   const three = { ...THREE };
@@ -121,6 +130,7 @@ export async function boot({ randomSeed = 7 } = {}) {
     requestAnimationFrame(cb) { pending = cb; return 1; },
     cancelAnimationFrame() { pending = null; },
     devicePixelRatio: 1,
+    localStorage,
     innerWidth: 1280,
     innerHeight: 720,
     AudioContext: undefined,          // Sound.init() bails out harmlessly without one
@@ -176,6 +186,8 @@ export async function boot({ randomSeed = 7 } = {}) {
   return {
     T,
     els: getEl,
+    storage: store,
+    localStorage,
     canvas,
     get clock() { return nowMs / 1000; },
     /** Advance one frame. The game caps raw dt at 0.05s, so that is the useful maximum. */

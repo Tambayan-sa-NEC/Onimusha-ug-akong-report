@@ -3,6 +3,8 @@
  */
 import { updateChallenge } from '../challenges/system.js';
 import { updateCombat } from '../combat/katana.js';
+import { CFG } from '../config/settings.js';
+import { session } from './Session.js';
 import { camera, renderer, scene } from './Stage.js';
 import { updatePlayer } from '../entities/Player.js';
 import { updateEmotes } from '../render/effects/emotes.js';
@@ -21,9 +23,17 @@ function frame() {
   requestAnimationFrame(frame);
   const now = performance.now() / 1000;
   const raw = Math.min(0.05, now - last);
+  // `last` advances even while paused, so resuming never hands the first frame a
+  // delta the size of the whole pause.
+  last = now;
+  if (session.paused) { renderer.render(scene, camera); return; }
+
   let dt = raw;
-  if (feedback.hitStop > 0) { feedback.hitStop -= raw; dt = raw * 0.08; }   // freeze-frame on big hits
-  last = now; time += dt;
+  if (feedback.hitStop > 0) {
+    feedback.hitStop = Math.max(0, feedback.hitStop - raw);
+    if (!CFG.reducedMotion) dt = raw * 0.08;   // freeze-frame on big hits
+  }
+  time += dt;
 
   updatePlayer(dt, time);
   updateHunts(dt);
@@ -34,7 +44,7 @@ function frame() {
   updateChallenge(dt);
   updateCombat(dt, time);
   updateEmotes(dt);
-  updatePetals(dt, time);
+  if (!CFG.reducedMotion) updatePetals(dt, time);
   water.rotation.y += dt * 0.004;   // slow facet shimmer
   cloudRoot.rotateOnAxis(CLOUD_AXIS, dt * 0.012);
   updateCamera(dt, time);

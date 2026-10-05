@@ -15,7 +15,13 @@ async function bootPlaying(id) {
   const g = await boot();
   g.T.start(id);
   for (const h of g.T.hosts) h.chCd = 1e9;
-  return { g, T: g.T };
+  return { g, T: g.T, els: g.els };
+}
+
+/** A button on the pause card, by its label. */
+function pauseButton(els, label) {
+  const card = els('pause').children[0];
+  return card && card.children.find(c => c.tagName === 'BUTTON' && c.textContent === label);
 }
 
 /** Is `obj` underneath `root` anywhere in the scene graph? */
@@ -192,7 +198,7 @@ async function atGateWithSeals() {
   g.run(0.2);
   const pb = T.player.body;
   pb.dir.copy(T.GATE_DIR); pb.fixFwd(); pb.sync();
-  return { g, T };
+  return { g, T, els: g.els };
 }
 
 await test('summoning a boss puts you in its arena', async () => {
@@ -243,15 +249,31 @@ await test('the second boss uses the marsh', async () => {
   eq(T.arena.active.id, 'marsh', 'in the marsh');
 });
 
-await test('forfeiting with Esc also lets you out', async () => {
-  const { g, T } = await atGateWithSeals();
+await test('forfeiting from the pause screen also lets you out', async () => {
+  const { g, T, els } = await atGateWithSeals();
   T.gate.interact();
   assert(T.arena.active, 'in the arena');
-  g.press('Escape');
+  g.press('Escape');                 // Esc opens the pause screen rather than forfeiting outright
+  assert(T.pause.open, 'paused inside the arena');
+  const btn = pauseButton(els, 'Forfeit challenge');
+  assert(btn, 'a boss fight can be bowed out of from the pause screen');
+  btn.dispatch('click');
   g.run(5, 0.05, () => !!T.ch.active);
   eq(T.arena.active, null, 'a forfeit must not strand you in a sealed space');
   eq(T.worldRoot.visible, true, 'the world is back');
   eq(T.started, true, 'and you are still playing, not dumped to the menu');
+});
+
+await test('quitting to the menu from inside an arena puts the world back', async () => {
+  const { g, T } = await atGateWithSeals();
+  T.gate.interact();
+  assert(T.arena.active, 'in the arena');
+  g.press('Escape');
+  T.quitToMenu();
+  eq(T.arena.active, null, 'the sealed space was torn down');
+  eq(T.worldRoot.visible, true, 'the planet is back');
+  eq(T.started, false, 'and we are on the menu');
+  eq(T.pause.open, false, 'with nothing left paused');
 });
 
 await test('you cannot walk out of a sealed arena', async () => {
