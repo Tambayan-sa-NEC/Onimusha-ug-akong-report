@@ -11,6 +11,8 @@ import { ITEMS, ITEM_DEFS } from '../data/itemDefs.js';
 const held = new Set();
 /** Chest ids already opened, so they stay open across a reload. */
 const opened = new Set();
+/** Villager ids whose errand has been settled. */
+const errands = new Set();
 
 const hasItem = id => held.has(id);
 const isOpened = id => opened.has(id);
@@ -23,6 +25,11 @@ function takeItem(id) {
 const markOpened = id => { opened.add(id); };
 /** Every keepsake, in a fixed order, each marked with whether it is held. */
 const collection = () => ITEM_DEFS.map(d => ({ ...d, held: held.has(d.id) }));
-const clearKeepsakes = () => { held.clear(); opened.clear(); };
+const didErrand = id => errands.has(id);
+const markErrand = id => { errands.add(id); };
+const clearKeepsakes = () => { held.clear(); opened.clear(); errands.clear(); };
 
-export { clearKeepsakes, collection, hasItem, held, isOpened, markOpened, opened, takeItem };
+export {
+  clearKeepsakes, collection, didErrand, errands, hasItem, held, isOpened, markErrand,
+  markOpened, opened, takeItem,
+};

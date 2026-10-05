@@ -3,17 +3,19 @@
  */
 import { oniAnim } from '../entities/NPC.js';
 
+// An `errand` is a villager who wants to be shown a keepsake, and gives one of their
+// own for the trouble. Nothing is taken from you — they only want to see it.
 // Lines are [text, action?, emote?, when?]. Actions: bow, hop, spin, wave, meditate, dance,
 // vanish. `when` is 'start', 'midway', 'gate' or 'done' — the chapter the line belongs to.
 // A line with no `when` is said at any point. See `chapter()` in entities/NPC.js.
 const SHARED_LINES = [
   ['Petals drifting down —\nthe path forgets where it went,\nbut my feet remember.', 'bow', '♪'],
   ['A frog on a stone\nconsiders the whole wide pond\nand decides to nap.', null, '♪'],
-  ['Fall seven times, stand up eight. Or sit down and have tea. Both are fine.', 'bow'],
-  ['Even monkeys fall from trees. Be gentle with yourself today.', null, '心'],
+  ['Fall seven times, stand up eight. Or sit down and have tea. Both are fine.', 'nod'],
+  ['Even monkeys fall from trees. Be gentle with yourself today.', 'laugh', '心'],
   ['Walk all the way around the planet sometime. It takes less time than a cup of tea.', 'wave'],
   ['Morning mist lingers\non the roof of the pagoda —\na cat yawns, then sleeps.', null, '♪'],
-  ['Have you tried the dango? Oh, wait. There is no shop. I simply dream of dango.', 'hop', '?'],
+  ['Have you tried the dango? Oh, wait. There is no shop. I simply dream of dango.', 'ponder', '?'],
   ['The wind is in a good mood. Can you hear it in the bamboo?', 'wave'],
   ['You have not met the yokai yet, have you? They are not unkind. Mostly.', 'wave', null, 'start'],
   ['Word travels. They say you have been winning seals.', 'bow', '!', 'midway'],
@@ -22,7 +24,7 @@ const SHARED_LINES = [
 ];
 const NPC_DEFS = [
   { id: 'kenji', name: 'Kenji the Ronin', seal: '侍', wander: 0.1, hints: true,
-    look: { top: '#3d4f73', bottom: '#2c2f3d', sash: '#c9b27a', hair: 'topknot', hakama: true, katana: true },
+    look: { top: '#3d4f73', bottom: '#2c2f3d', sash: '#c9b27a', hair: 'topknot', hakama: true, katana: true, scarf: '#8a3b36' },
     lines: [
       ['A sword is heaviest when you carry anger. Today, mine feels light.', 'bow', '礼'],
       ['I once chased glory across three provinces. Now I chase the sunset around this little world.'],
@@ -35,7 +37,11 @@ const NPC_DEFS = [
       ['Hmph. My stance is perfect. Do not tell anyone the cat startled me earlier.', 'hop', '!'],
     ] },
   { id: 'hanako', name: 'Hanako, Tea Master', seal: '茶', wander: 0.05,
-    look: { top: '#8a6fae', sash: '#e8c35e', hair: 'bun', robe: true },
+    errand: { wants: 'teacup', gives: 'whisk',
+      ask: 'Somewhere on this little world there is a cup mended with gold along the crack. I should very much like to see it again. Bring it by, if you find it.',
+      thanks: 'Oh — oh, that is the one. Kintsugi. The break is the best part of it now.\nTake this whisk. I have another, and you have better eyes than I do.',
+      done: 'That cup. Mended with gold. I think about it more than I should.' },
+    look: { top: '#8a6fae', sash: '#e8c35e', hair: 'bun', robe: true, apron: '#f2ece0' },
     lines: [
       ['Ichi-go ichi-e. This moment, this cup, will never come again.', 'bow', '茶'],
       ['Sit a while. The kettle is almost singing.', 'meditate'],
@@ -47,7 +53,7 @@ const NPC_DEFS = [
       ['You have earned your tea today. Sit, if your legs will let you.', 'bow', '茶', 'done'],
     ] },
   { id: 'daisuke', name: 'Monk Daisuke', seal: '禅', wander: 0.06, hints: true,
-    look: { top: '#d88a3c', sash: '#8a5530', hair: 'bald', robe: true, skin: '#e8b98f' },
+    look: { top: '#d88a3c', sash: '#8a5530', hair: 'bald', robe: true, skin: '#e8b98f', scarf: '#b5651d' },
     lines: [
       ['Breathe in... breathe out. Congratulations. You did it perfectly.', 'meditate', '禅'],
       ['The pond does not try to be still. It simply stops being stirred.'],
@@ -87,6 +93,10 @@ const NPC_DEFS = [
       ['I am not hiding from you. I am hiding from my mother.', 'vanish'],
     ] },
   { id: 'goro', name: 'Old Goro the Fisherman', seal: '魚', wander: 0.07, hints: true,
+    errand: { wants: 'stone', gives: 'pearl',
+      ask: 'Forty years on this water and I have never found a stone flat enough to skip properly. If you ever turn one up, bring it here and let an old man see it.',
+      thanks: 'Ha! Now THAT is a skipping stone. Four bounces, maybe five.\nHere — the river gave me this years ago. It should belong to someone who still goes looking.',
+      done: 'Still thinking about that stone of yours. Five bounces, I reckon.' },
     look: { top: '#5d7d98', bottom: '#3e4a55', sash: '#c9b27a', hair: 'short', hat: 'kasa', hairColor: '#9a9a9a' },
     lines: [
       ['The koi are not for catching. I just like to watch them think.'],

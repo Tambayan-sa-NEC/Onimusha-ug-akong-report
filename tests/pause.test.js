@@ -287,6 +287,22 @@ await test('every action appears somewhere on the controls page', async () => {
   eq(labels.length, Object.keys(T.DEFAULT_BINDS).length, 'one row per action, no more and no fewer');
 });
 
+await test('the seals page lists every yokai and whether its seal is yours', async () => {
+  const { g, T, els } = await playing();
+  T.won.add(T.GAME_ORDER[0]);
+  g.press('Escape');
+  pauseButton(els, 'Seals').dispatch('click');
+  const card = els('pause').children[0];
+  const rows = card.children.filter(c => c.className && c.className.startsWith('pseals'))
+    .flatMap(l => l.children);
+  eq(rows.length, T.GAME_ORDER.length + T.BOSS_ORDER.length, 'every game and both great yokai');
+  const names = rows.map(r => r.children.find(c => c.className === 'pstext').children[0].textContent);
+  for (const key of T.GAME_ORDER) {
+    assert(names.includes(T.hostNameFor(key)), `${key}'s yokai is named`);
+  }
+  eq(rows.filter(r => r.className.includes('won')).length, 1, 'one seal marked won');
+});
+
 /* ---------------------------------- settings --------------------------------- */
 
 await test('the settings the pause screen offers all exist as tunables', async () => {

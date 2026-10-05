@@ -9,6 +9,8 @@ import { worldRoot } from '../core/Stage.js';
 import { SHARED_LINES } from '../data/npcDefs.js';
 import { player } from './Player.js';
 import { cheer } from './pets.js';
+import { didErrand, hasItem, markErrand, takeItem } from '../core/keepsakes.js';
+import { ITEMS } from '../data/itemDefs.js';
 import { applyAction, makeHumanoid, poseHumanoid, startAction } from './models/humanoid.js';
 import { SurfaceBody } from '../physics/SurfaceBody.js';
 import { emote } from '../render/effects/emotes.js';
@@ -26,7 +28,11 @@ function oniAnim(n, dt) {
   if (n.slam > 0) { n.slam -= dt; n.h.arms[1].rotation.x = n.slam > 0.25 ? -2.9 : -0.9; }
 }
 
-const GENTLE_ACTIONS = ['bow', 'wave', null, null];
+const GENTLE_ACTIONS = ['bow', 'wave', 'nod', 'laugh', 'ponder', null, null];
+
+/** Told when an errand is settled, so progress can be written down. Set at boot. */
+let onErrandDone = () => {};
+const setErrandListener = fn => { onErrandDone = fn; };
 
 /**
  * How far along the journey is, as a single word. Lines in `npcDefs` may carry a
@@ -91,10 +97,30 @@ class NPC {
     if (this.recent.length > 4) this.recent.shift();
     return line;
   }
+  /**
+   * An errand, if this villager has one and it is the thing worth saying. Returns a
+   * line in the usual shape, or null to carry on with ordinary conversation.
+   *
+   * Nothing is taken from you — they want to see the keepsake, not keep it.
+   */
+  errandLine() {
+    const e = this.def.errand;
+    if (!e) return null;
+    if (didErrand(this.def.id)) {
+      return Math.random() < 0.4 ? [e.done, 'nod', null] : null;   // mentioned, not laboured
+    }
+    if (!hasItem(e.wants)) return [e.ask, 'ponder', '?'];
+    markErrand(this.def.id);
+    const got = takeItem(e.gives);
+    const item = ITEMS[e.gives];
+    onErrandDone(this);
+    const note = got && item ? '\n\n(' + item.name + ')' : '';
+    return [e.thanks + note, 'bow', item ? item.seal : '礼'];
+  }
   interact() {
     const b = this.b, P = player.body.obj.position;
     if (b.toward(P, tangentA)) b.turnToward(tangentA, Math.PI);
-    const [text, action0, em] = this.pickLine();
+    const [text, action0, em] = this.errandLine() || this.pickLine();
     const action = action0 !== undefined ? action0 : GENTLE_ACTIONS[Math.floor(Math.random() * GENTLE_ACTIONS.length)];
     if (action === 'vanish') this.vanish(); else startAction(this.h, action);
     if (em) emote(b.obj.position, b.dir, em, 2.5 * (this.def.look.scale || 1));
@@ -148,4 +174,4 @@ class NPC {
   }
 }
 
-export { GENTLE_ACTIONS, NPC, chapter, hintLine, oniAnim, unwonGame };
+export { GENTLE_ACTIONS, NPC, chapter, hintLine, oniAnim, setErrandListener, unwonGame };

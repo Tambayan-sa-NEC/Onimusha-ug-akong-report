@@ -1,14 +1,15 @@
 /* Everything drawn over the game while you play. */
 
 #dialog { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); width: min(600px, 88vw);
-  padding: 14px 20px 16px 74px; background: var(--washi); border-radius: 4px; box-sizing: border-box;
-  box-shadow: 0 6px 24px rgba(70, 40, 30, .18); opacity: 0; transition: opacity .25s; pointer-events: none; }
+  padding: 12px 18px 13px 74px; background: var(--washi); border: var(--panel-edge);
+  border-radius: var(--panel-radius); box-sizing: border-box;
+  box-shadow: var(--panel-shadow); opacity: 0; transition: opacity .25s; pointer-events: none; }
 #dialog.show { opacity: 1; }
 /* hanko-style seal with the NPC's kanji */
 #dseal { position: absolute; left: 16px; top: 16px; width: 42px; height: 42px; border-radius: 6px;
   background: var(--shu); color: #fff4ec; font-size: 24px; line-height: 42px; text-align: center; transform: rotate(-4deg); }
-#dname { font-weight: bold; color: var(--shu); margin-bottom: 4px; letter-spacing: .03em; }
-#dtext { font-size: 17px; line-height: 1.55; white-space: pre-line; min-height: 1.55em; }
+#dname { font-weight: bold; color: var(--shu); margin-bottom: 4px; letter-spacing: .03em; font-size: var(--fs-small); }
+#dtext { font-size: var(--fs-body); line-height: 1.55; white-space: pre-line; min-height: 1.55em; }
 
 #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
   background: rgba(188, 217, 234, .45); cursor: pointer; transition: opacity .8s; }
@@ -23,26 +24,29 @@
 
 /* yokai challenges */
 #seals { position: fixed; right: 16px; top: 16px; display: flex; gap: 4px; padding: 7px; background: var(--washi);
-  border-radius: 4px; box-shadow: 0 2px 10px rgba(70, 40, 30, .12); }
+  border: var(--panel-edge); border-radius: var(--panel-radius); box-shadow: var(--panel-shadow); }
 #seals span { width: 24px; height: 24px; line-height: 24px; text-align: center; font-size: 14px; border: 1px solid #cdbca8;
   border-radius: 3px; color: #bcae9e; }
 #seals span.won { background: var(--shu); border-color: var(--shu); color: #fff4ec; }
-#chPanel { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); width: min(460px, 60vw); padding: 10px 18px 12px;
-  background: var(--washi); border-top: 4px solid var(--shu); border-radius: 4px; text-align: center; display: none;
-  box-shadow: 0 4px 16px rgba(70, 40, 30, .16); }
+#chPanel { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); width: min(460px, 60vw);
+  padding: var(--panel-pad);
+  background: var(--washi); border: var(--panel-edge); border-top: 4px solid var(--shu);
+  border-radius: var(--panel-radius); text-align: center; display: none;
+  box-shadow: var(--panel-shadow); }
 #chPanel.show { display: block; }
-#chTitle { font-size: 18px; font-weight: bold; }
-#chHow { font-size: 13px; line-height: 1.5; opacity: .75; margin-top: 3px; }
-#chStatus { font-size: 16px; margin-top: 6px; white-space: pre; color: var(--shu); }
+#chTitle { font-size: var(--fs-title); font-weight: bold; }
+#chHow { font-size: var(--fs-small); line-height: 1.5; opacity: .75; margin-top: 3px; }
+#chStatus { font-size: var(--fs-body); margin-top: 6px; white-space: pre; color: var(--shu); }
 #seals span.tally { width: auto; padding: 0 6px; border: 0; color: #9a8a78; font-size: 11px; }
 #seals span.tally.lit { color: var(--shu); font-weight: bold; }
 #seals span.boss { border-color: #8a7360; color: #8a7360; }
 #seals span.boss.won { background: #2a2626; border-color: #2a2626; color: #f1cf6a; }
 #bossBar { position: fixed; left: 50%; top: 78px; transform: translateX(-50%); width: min(520px, 76vw);
-  padding: 8px 14px 10px; background: rgba(42, 37, 34, .86); border-radius: 4px; text-align: center;
-  opacity: 0; transition: opacity .35s; pointer-events: none; }
+  padding: var(--panel-pad); background: rgba(42, 37, 34, .86);
+  border: 1px solid rgba(0, 0, 0, .25); border-radius: var(--panel-radius); text-align: center;
+  box-shadow: var(--panel-shadow); opacity: 0; transition: opacity .35s; pointer-events: none; }
 #bossBar.show { opacity: 1; }
-#bossName { color: #f1cf6a; font-size: 15px; letter-spacing: .08em; margin-bottom: 5px; }
+#bossName { color: #f1cf6a; font-size: var(--fs-small); letter-spacing: .08em; margin-bottom: 5px; }
 #bossTrack { height: 12px; background: #15120f; border: 1px solid #6a5a48; border-radius: 6px; overflow: hidden; }
 #bossFill { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #8a2a24, #d9533f);
   transition: width .18s; }
@@ -52,7 +56,8 @@
 
 /* vitals: hearts, always in the same place whether or not you are fighting */
 #vitals { position: fixed; left: 16px; bottom: 16px; display: none; gap: 3px; padding: 7px 10px;
-  background: var(--washi); border-radius: 4px; box-shadow: 0 2px 10px rgba(70, 40, 30, .12);
+  background: var(--washi); border: var(--panel-edge); border-radius: var(--panel-radius);
+  box-shadow: var(--panel-shadow);
   user-select: none; pointer-events: none; }
 #vitals.show { display: flex; }
 #vitals .heart { font-size: 19px; line-height: 1; color: var(--shu); }

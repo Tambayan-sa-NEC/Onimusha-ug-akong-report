@@ -25,6 +25,15 @@ function makeHumanoid(o) {
   upper.add(part(GEO.box, o.top, [0, 0.33, 0], [0.56, 0.7, 0.34]));
   upper.add(part(GEO.box, o.collar || '#f4efe4', [0, 0.52, 0.172], [0.16, 0.26, 0.01]));   // inner collar / belly
   if (o.shell) upper.add(part(GEO.dode, o.shell, [0, 0.35, -0.24], [0.34, 0.42, 0.16]));
+  if (o.scarf) {   // a band of cloth wound at the neck, knotted at the front
+    upper.add(part(GEO.box, o.scarf, [0, 0.55, 0], [0.38, 0.12, 0.34]));
+    upper.add(part(GEO.box, o.scarf, [0.06, 0.46, 0.17], [0.1, 0.18, 0.06], [0, 0, 0.3]));
+  }
+  if (o.pack) {   // a bundle carried on the back
+    upper.add(part(GEO.box, o.pack, [0, 0.33, -0.28], [0.44, 0.38, 0.22]));
+    upper.add(part(GEO.box, '#6b5a44', [0, 0.46, -0.28], [0.46, 0.06, 0.24]));
+  }
+  if (o.apron) upper.add(part(GEO.box, o.apron, [0, 0.2, 0.19], [0.46, 0.5, 0.02]));
   if (o.armor) {
     upper.add(part(GEO.box, o.armor, [0, 0.32, 0], [0.62, 0.46, 0.4]));
     upper.add(part(GEO.box, '#d9b45a', [0, 0.18, 0.205], [0.5, 0.04, 0.01]));
@@ -151,6 +160,7 @@ function poseHumanoid(h, phase, amt, t) {
   h.head.rotation.x = 0;
 }
 const ACTION_DUR = { bow: 1.2, hop: 0.9, spin: 1.0, wave: 1.6, meditate: 3.2, dance: 2.2, throw: 0.3,
+  nod: 1.0, laugh: 1.4, stretch: 1.8, ponder: 2.0, sweep: 2.4,
   slash1: 0.32, slash2: 0.32, slash3: 0.5, hurt: 0.4, kneel: 2.4, roll: 0.34 };
 const COMBAT_ACTIONS = new Set(['slash1', 'slash2', 'slash3', 'throw', 'hurt', 'spin', 'kneel', 'roll']);   // walking doesn't cancel these
 function startAction(h, type) { if (ACTION_DUR[type]) h.action = { type, t: 0, dur: ACTION_DUR[type] }; }
@@ -173,6 +183,33 @@ function applyAction(h, dt) {
       break;
     }
     case 'wave': h.arms[1].rotation.set(0, 0, 2.6 + Math.sin(a.t * 14) * 0.35); break;
+    case 'nod': h.head.rotation.x = Math.sin(a.t * 9) * 0.3 * bell; break;
+    case 'laugh': {   // head back, shoulders going
+      h.head.rotation.x = -0.3 * bell;
+      h.upper.rotation.x = -0.12 * bell;
+      h.body.position.y = Math.abs(Math.sin(a.t * 11)) * 0.06 * bell;
+      h.arms.forEach((ar, i) => { ar.rotation.z = (i ? -0.5 : 0.5) * bell; });
+      break;
+    }
+    case 'stretch': {   // both arms up and a long lean back
+      h.arms.forEach(ar => { ar.rotation.x = -2.7 * bell; });
+      h.upper.rotation.x = -0.3 * bell;
+      h.head.rotation.x = -0.2 * bell;
+      break;
+    }
+    case 'ponder': {   // one hand to the chin, head tipped
+      h.arms[1].rotation.set(-2.2 * bell, 0, 0.5 * bell);
+      h.head.rotation.z = 0.22 * bell;
+      h.head.rotation.x = 0.1 * bell;
+      break;
+    }
+    case 'sweep': {   // both hands low, working side to side
+      const w = Math.sin(a.t * 5) * bell;
+      h.arms.forEach(ar => { ar.rotation.x = -0.9 * bell; ar.rotation.y = w * 0.5; });
+      h.upper.rotation.x = 0.35 * bell;
+      h.upper.rotation.y = w * 0.3;
+      break;
+    }
     case 'meditate': {
       const d = Math.min(1, Math.min(a.t, a.dur - a.t) * 3);
       h.body.position.y = -0.62 * d;

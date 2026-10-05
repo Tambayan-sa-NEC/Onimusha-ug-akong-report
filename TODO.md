@@ -76,7 +76,7 @@ Not features in themselves — two small pieces of groundwork that several featu
 
 ## Planned features
 
-### 1. Better HUD — **mostly done**
+### 1. Better HUD — **done**
 
 Built in `src/ui/hud.js`, covered by `tests/hud.test.js`.
 
@@ -90,10 +90,13 @@ Built in `src/ui/hud.js`, covered by `tests/hud.test.js`.
       information lives on the pause screen's Controls page.
 - [x] Decide what the HUD does during the ending cutscene — the hearts and the seal book
       both stand aside.
-- [ ] **Still open:** the challenge panel, boss bar and dialogue box still have their own
-      spacing, corners and type scale. Pulling them onto one scale is the remaining work.
-- [ ] **Still open:** the seal row does not say which yokai each seal belongs to beyond
-      its tooltip.
+- [x] One panel language. `--panel-radius`, `--panel-pad`, `--panel-shadow`,
+      `--panel-edge` and a three-step type scale live in `styles/base.css`, and the
+      challenge panel, boss bar, dialogue box, prompt, vitals, seal row and pause card
+      all read from them rather than each carrying its own numbers.
+- [x] Every seal is named with its yokai, not just its game — in the tooltip, and in
+      full on a Seals page on the pause screen that lists who hosts what, which are
+      yours, and the two great yokai behind the gate.
 
 *Lives in:* `ui/hud.js`, `styles/hud.css`, `index.html`.
 
@@ -122,29 +125,26 @@ Built in `src/ui/pause.js`, styled in `styles/pause.css`, covered by `tests/paus
       mini-games — worth revisiting if it turns out to make them too easy.*
 
 #### Settings — **done**
-- [x] Audio: a master volume and a mute that the pause screen can set directly.
-      *Separate music and effect buses are still open — the oscillators in
-      `systems/audio.js` all share one gain node today.*
-- [x] Camera: invert look and sensitivity.  *Default camera distance is still not
-      exposed, though `CFG.camDist` is ready for it.*
+- [x] Audio: a master volume, and music and effects on separate buses beneath it, so the
+      koto can be turned down without silencing the sword.
+- [x] Camera: invert look, sensitivity, and the default distance.
 - [x] Accessibility: reduced motion (drops the hit-stop freeze-frame and the drifting
-      petals) and dialogue typewriter speed.  *A larger-text option is still open.*
+      petals), dialogue typewriter speed, and a larger-text option.
 - [x] Persist all of it, with a reset-to-defaults.
 
 Most of these map onto `CFG` already. Resist scattering new globals; extend `CFG` and
 let the settings screen write to it.
 
-#### Keymaps — **mostly done**
+#### Keymaps — **done**
 - [x] Show the current bindings.
 - [x] Allow rebinding, with conflict detection and a reset-to-defaults.
 - [x] Keep `input.js` the single owner of input. Bindings live in `config/keys.js` as
       data; `input.js` reads them instead of hard-coding `e.code === 'KeyE'`.
-- [ ] **Still open:** the list is flat, so the kunoichi's dash and the rōnin's roll are
-      both always shown, each labelled with whose move it is. A per-character view would
-      read better.
-- [ ] **Still open:** rebinding takes a single key, so an action cannot be given a second
-      binding from the UI — the defaults that have two (`W`/`↑`) can only lose one.
-      The data layer supports several; only the editor does not.
+- [x] Grouped rather than flat: walking, doing things, and a heading each for the rōnin
+      and the kunoichi, so whose move is whose is a heading and not a parenthesis.
+- [x] An action can hold several keys again. `+` adds one, `×` drops one, and the last
+      binding can never be dropped. A key already spoken for is refused rather than
+      quietly stolen from whatever had it.
 
 ---
 
@@ -175,7 +175,7 @@ let the settings screen write to it.
 
 ---
 
-### 5. Better NPCs — **mostly done**
+### 5. Better NPCs — **done**
 
 Covered by `tests/npc.test.js`.
 
@@ -187,9 +187,13 @@ Covered by `tests/npc.test.js`.
       chapter falls back to its whole set rather than falling silent.
 - [x] Kenji, Daisuke and Goro give hints, naming a game still unplayed, and pointing at
       the gate once there are none left.
-- [ ] **Still open:** no new `look` variety, and the animation set is unchanged.
-- [ ] **Still open:** nobody gives a reward or sets an errand — hints are as far as it
-      goes.
+- [x] More variety in `look` and in the animation set. `makeHumanoid` gained `scarf`,
+      `apron` and `pack`, and five gestures joined the set — `nod`, `laugh`, `stretch`,
+      `ponder` and `sweep` — which the idle set and the written lines both draw on.
+- [x] Two villagers set an errand. Goro wants to be shown a skipping stone and Hanako
+      the gold-mended teacup; each gives a keepsake of their own that is found nowhere
+      else. Nothing is taken from you — they only want to see it — and a settled errand
+      is remembered, mentioned now and then, and never paid twice.
 
 **No world-generation risk after all.** None of this changes how many draws come out of
 the seeded stream: `wander` is read at runtime, `makeHumanoid` never calls `rand`, and no
@@ -221,8 +225,10 @@ Built in `world/houses.js` and `world/arenas/interior.js`, covered by
       already does for props this small.
 - [x] Opened state persists, so they do not refill on reload.
 - [x] Each holds a keepsake. Ten are out on the planet; two are indoors.
-- [ ] **Still open:** none are hidden anywhere properly cunning — behind the sealed
-      gate, at the poles, or underwater.
+- [x] Hidden somewhere worth searching: one at each pole, one within sight of the
+      sealed gate, and two on the hilltops. Anything that cannot be honoured — a pole
+      that happens to be ocean — quietly falls back to open ground, so a chest is never
+      lost. Nothing is placed underwater, since there is no swimming.
 
 ---
 

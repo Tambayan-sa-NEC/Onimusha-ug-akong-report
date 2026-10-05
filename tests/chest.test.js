@@ -24,8 +24,11 @@ await test('there is a chest out on the planet for every outdoor keepsake', asyn
   const { T } = await playing();
   eq(T.chests.length, T.OUTDOOR_ITEMS.length, 'one chest each');
   eq(new Set(T.chests.map(c => c.itemId)).size, T.OUTDOOR_ITEMS.length, 'and no two hold the same thing');
-  // The rest are indoors; between them the two sets cover everything exactly once.
-  eq(T.OUTDOOR_ITEMS.length + T.INDOOR_ITEMS.length, T.ITEM_DEFS.length, 'nothing is unreachable');
+  // Between chests, rooms and errands, every keepsake is reachable exactly one way.
+  eq(T.OUTDOOR_ITEMS.length + T.INDOOR_ITEMS.length + T.ERRAND_ITEMS.length,
+    T.ITEM_DEFS.length, 'nothing is unreachable, and nothing is in two places');
+  const seen = new Set([...T.OUTDOOR_ITEMS, ...T.INDOOR_ITEMS, ...T.ERRAND_ITEMS].map(d => d.id));
+  eq(seen.size, T.ITEM_DEFS.length, 'and no keepsake is counted twice');
 });
 
 await test('chests answer E alongside the villagers', async () => {
@@ -57,6 +60,30 @@ await test('chests are drawn from their own stream, leaving the world alone', as
   eq(a.T.chests.map(c => c.id).join(), b.T.chests.map(c => c.id).join(), 'same chests');
   const same = a.T.chests.every((c, i) => c.b.dir.distanceTo(b.T.chests[i].b.dir) < 1e-9);
   assert(same, 'and in the same places on every visit');
+});
+
+await test('some chests are hidden somewhere worth searching', async () => {
+  const { T } = await playing();
+  const lat = d => Math.asin(Math.max(-1, Math.min(1, d.y))) * 180 / Math.PI;
+  const nearPole = T.chests.filter(c => Math.abs(lat(c.b.dir)) > 60);
+  assert(nearPole.length >= 2, `both poles are used, got ${nearPole.length}`);
+  assert(nearPole.some(c => lat(c.b.dir) > 60), 'one in the north');
+  assert(nearPole.some(c => lat(c.b.dir) < -60), 'and one in the south');
+
+  const byGate = T.chests.filter(c => T.angleBetween(c.b.dir, T.GATE_DIR) * T.R < 14);
+  assert(byGate.length >= 1, 'something waits near the sealed gate');
+
+  const onHills = T.chests.filter(c =>
+    T.HILLS.some(h => T.angleBetween(c.b.dir, h.c) * T.R < 10));
+  assert(onHills.length >= 2, `the hilltops are worth climbing, got ${onHills.length}`);
+});
+
+await test('a hidden chest is still a chest, standing on real ground', async () => {
+  const { T } = await playing();
+  for (const c of T.chests) {
+    assert(T.onLand(c.b.dir), `${c.id} is reachable on foot`);
+    assert(T.heightAt(c.b.dir) > T.WALK_MIN, `${c.id} is not in the sea`);
+  }
 });
 
 /* ---------------------------------- opening --------------------------------- */

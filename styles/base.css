@@ -6,6 +6,16 @@
   --shu: #c8423a;       /* torii vermilion */
   --sakura: #f3b6c6;
   --matcha: #7f9f5a;
+
+  /* One panel language, so the challenge panel, the boss bar, the dialogue box and
+     the pause card are recognisably the same furniture. */
+  --panel-radius: 5px;
+  --panel-pad: 12px 18px 13px;
+  --panel-shadow: 0 6px 22px rgba(70, 40, 30, .18);
+  --panel-edge: 1px solid rgba(205, 188, 168, .55);
+  --fs-title: 19px;
+  --fs-body: 16px;
+  --fs-small: 13px;
 }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #bcd9ea; color: var(--sumi);
   font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Songti SC", Georgia, serif; }

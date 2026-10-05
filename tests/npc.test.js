@@ -97,6 +97,120 @@ await test('an NPC with no line for this chapter still has something to say', as
   }
 });
 
+/* ---------------------------------- errands --------------------------------- */
+
+const asker = (T, id) => T.npcs.find(n => n.def && n.def.id === id);
+
+await test('some villagers ask you for something', async () => {
+  const { T } = await playing();
+  const withErrand = villagers(T).filter(n => n.def.errand);
+  assert(withErrand.length >= 2, `at least a couple have an errand, got ${withErrand.length}`);
+  for (const n of withErrand) {
+    const e = n.def.errand;
+    assert(T.ITEMS[e.wants], `${n.def.id} wants a real keepsake`);
+    assert(T.ITEMS[e.gives], `${n.def.id} gives a real one`);
+    assert(e.ask && e.thanks && e.done, `${n.def.id} has all three lines`);
+  }
+});
+
+await test('what an errand gives is not lying about in a chest', async () => {
+  const { T } = await playing();
+  const inChests = new Set(T.chests.map(c => c.itemId));
+  for (const d of T.ERRAND_ITEMS) {
+    assert(!inChests.has(d.id), `${d.id} is only ever given, never found`);
+    assert(!T.OUTDOOR_ITEMS.includes(d) && !T.INDOOR_ITEMS.includes(d), `${d.id} is in neither pile`);
+  }
+});
+
+await test('empty-handed, the villager asks rather than rewards', async () => {
+  const { T } = await playing();
+  const who = asker(T, 'goro');
+  assert(who, 'Goro is on the planet');
+  const line = who.errandLine();
+  eq(line[0], who.def.errand.ask, 'he asks');
+  eq(T.held.size, 0, 'and nothing changes hands');
+  eq(T.didErrand('goro'), false, 'the errand is still open');
+});
+
+await test('showing the keepsake settles the errand and is repaid', async () => {
+  const { T } = await playing();
+  const who = asker(T, 'goro');
+  const e = who.def.errand;
+  T.takeItem(e.wants);
+  const line = who.errandLine();
+  assert(line[0].startsWith(e.thanks), 'he is pleased');
+  assert(T.hasItem(e.gives), 'and gives you his own keepsake');
+  eq(T.didErrand('goro'), true, 'the errand is settled');
+});
+
+await test('the keepsake you showed is not taken off you', async () => {
+  const { T } = await playing();
+  const who = asker(T, 'goro');
+  T.takeItem(who.def.errand.wants);
+  who.errandLine();
+  assert(T.hasItem(who.def.errand.wants), 'you keep what you brought');
+  eq(T.held.size, 2, 'and are two keepsakes up');
+});
+
+await test('a settled errand is not paid twice', async () => {
+  const { T } = await playing();
+  const who = asker(T, 'goro');
+  T.takeItem(who.def.errand.wants);
+  who.errandLine();
+  const before = T.held.size;
+  for (let i = 0; i < 10; i++) who.errandLine();
+  eq(T.held.size, before, 'no second reward');
+});
+
+await test('a settled errand is mentioned, not laboured', async () => {
+  const { T } = await playing();
+  const who = asker(T, 'goro');
+  T.takeItem(who.def.errand.wants);
+  who.errandLine();
+  let mentions = 0, quiet = 0;
+  for (let i = 0; i < 60; i++) (who.errandLine() ? mentions++ : quiet++);
+  assert(mentions > 0, 'he brings it up sometimes');
+  assert(quiet > 0, 'but not every single time');
+});
+
+await test('settling an errand writes the run down', async () => {
+  const { T } = await playing();
+  const who = asker(T, 'goro');
+  T.takeItem(who.def.errand.wants);
+  who.interact();
+  const saved = T.loadProgress();
+  assert(saved, 'a run worth continuing');
+  assert(saved.errands.includes('goro'), 'with the errand remembered');
+});
+
+/* --------------------------------- gestures --------------------------------- */
+
+await test('the villagers have more to do than bow and wave', async () => {
+  const { T } = await playing();
+  for (const a of ['nod', 'laugh', 'stretch', 'ponder', 'sweep']) {
+    assert(T.ACTION_DUR[a] > 0, `${a} is a real gesture`);
+  }
+  assert(T.GENTLE_ACTIONS.filter(Boolean).length >= 4, 'and the idle set draws on several');
+});
+
+await test('a new gesture actually moves the model and then lets go', async () => {
+  const { T } = await playing();
+  const who = villagers(T)[0];
+  T.startAction(who.h, 'stretch');
+  T.applyAction(who.h, 0.9);                 // halfway through
+  assert(who.h.arms[0].rotation.x < -0.5, 'arms go up');
+  T.applyAction(who.h, 2);                   // past the end
+  eq(who.h.action, null, 'and the gesture finishes');
+});
+
+await test('the villagers do not all look the same', async () => {
+  const { T } = await playing();
+  const looks = villagers(T).map(n => JSON.stringify(n.def.look));
+  eq(new Set(looks).size, looks.length, 'every villager has their own look');
+  const extras = villagers(T).filter(n => n.def.look.scarf || n.def.look.apron || n.def.look.pack);
+  assert(extras.length >= 2, `some wear the newer pieces, got ${extras.length}`);
+});
+
 /* ----------------------------------- hints ---------------------------------- */
 
 await test('some villagers know things worth passing on', async () => {

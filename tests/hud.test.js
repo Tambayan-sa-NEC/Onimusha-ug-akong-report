@@ -118,6 +118,32 @@ await test('an unwon seal carries no mark, and says what it is', async () => {
   assert(cell.title && cell.title.length > 0, 'but it still names its challenge');
 });
 
+await test('a seal says which yokai it belongs to, not just which game', async () => {
+  const { T, els } = await playing('samurai');
+  const key = T.GAME_ORDER[0];
+  const cell = els('seals').children[0];
+  const who = T.hostNameFor(key);
+  assert(who && who !== 'someone', `${key} has a host, got "${who}"`);
+  assert(cell.title.includes(who), `the tooltip names the yokai, said "${cell.title}"`);
+  assert(cell.title.includes(T.GAMES[key].title), 'and still names the game');
+});
+
+await test('every game has a yokai that hosts it', async () => {
+  const { T } = await playing('samurai');
+  for (const key of T.GAME_ORDER) {
+    const who = T.hostNameFor(key);
+    assert(who && who !== 'someone', `${key} has nobody to host it`);
+  }
+});
+
+await test('a won seal says so, and an unwon one says not yet', async () => {
+  const { T, els } = await playing('samurai');
+  assert(/not yet/i.test(els('seals').children[0].title), 'unwon says so');
+  T.won.add(T.GAME_ORDER[0]);
+  T.buildSeals();
+  assert(/won/i.test(els('seals').children[0].title), 'and won says so');
+});
+
 /* ----------------------------- getting out of the way ---------------------------- */
 
 await test('the controls card bows out once you have been playing a while', async () => {

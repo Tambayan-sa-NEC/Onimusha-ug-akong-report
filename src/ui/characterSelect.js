@@ -10,7 +10,7 @@ import { buildSeals } from '../challenges/seals.js';
 import { clearKunai } from '../combat/kunai.js';
 import { CHARACTERS } from '../config/characters.js';
 import { last } from '../core/GameLoop.js';
-import { clearKeepsakes, held, opened, takeItem } from '../core/keepsakes.js';
+import { clearKeepsakes, errands, held, opened, takeItem } from '../core/keepsakes.js';
 import { hasProgress, loadProgress, saveProgress } from '../core/save.js';
 import { session } from '../core/Session.js';
 import { setCharacter, setWolf, player } from '../entities/Player.js';
@@ -185,6 +185,7 @@ function continueRun() {
   for (const k of saved.slain) slain.add(k);
   for (const k of saved.held || []) takeItem(k);
   for (const k of saved.opened || []) opened.add(k);
+  for (const k of saved.errands || []) errands.add(k);
   resetChests();                       // lids match what was already opened
   buildSeals();
   start(saved.char);
@@ -199,7 +200,7 @@ function continueRun() {
 /** Write down where the run has got to. Cheap, and only ever loses the last seal. */
 function recordProgress() {
   if (!player.char) return;
-  saveProgress({ char: player.char.id, won, bossWon, slain, held, opened, pet: petId() });
+  saveProgress({ char: player.char.id, won, bossWon, slain, held, opened, errands, pet: petId() });
 }
 
 /** Step back to the opening screens, leaving nothing of this character behind. */

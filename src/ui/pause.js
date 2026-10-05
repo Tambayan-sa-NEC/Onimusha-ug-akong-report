@@ -4,7 +4,12 @@
  * DOM only, like everything else in ui/. It reads game state and calls into the
  * systems that own it; nothing here reaches into the world directly.
  */
-import { abandonChallenge, ch, el, forfeitChallenge } from '../challenges/system.js';
+import {
+  SEALS_FOR_GATE, abandonChallenge, bossWon, ch, el, forfeitChallenge, won,
+} from '../challenges/system.js';
+import { GAMES, GAME_ORDER } from '../challenges/games/index.js';
+import { hostNameFor } from '../challenges/seals.js';
+import { BOSS_ORDER } from '../data/bossDefs.js';
 import { leaveRoom } from '../world/houses.js';
 import {
   DEFAULT_BINDS, bindConflict, codesFor, removeBinding, resetBinds, setBinding,
@@ -69,6 +74,7 @@ function renderRoot(box) {
   button(box, 'Resume', 'pbtn primary', closePause);
   button(box, 'Settings', 'pbtn', () => show('settings'));
   button(box, 'Controls', 'pbtn', () => show('keys'));
+  button(box, 'Seals', 'pbtn', () => show('seals'));
   button(box, 'Keepsakes', 'pbtn', () => show('items'));
   // Only offered when there is something to bow out of.
   if (ch.active && !ch.active.done) {
@@ -173,6 +179,37 @@ function renderKeys(box) {
   button(box, 'Back', 'pbtn', () => { pause.listening = null; back(); });
 }
 
+/** The seal book in full: which yokai, which game, and whether it is yours. */
+function renderSeals(box) {
+  el('h2', undefined, 'Seals', box);
+  el('p', 'phint',
+    `${won.size} of ${GAME_ORDER.length} won — ${SEALS_FOR_GATE} of them open the gate on the far hill.`, box);
+  const list = el('div', 'pseals', undefined, box);
+  for (const key of GAME_ORDER) {
+    const w = won.has(key);
+    const r = el('div', w ? 'pseal won' : 'pseal', undefined, list);
+    el('div', 'psseal', GAMES[key].seal, r);
+    const text = el('div', 'pstext', undefined, r);
+    el('div', 'psname', hostNameFor(key), text);
+    el('div', 'psgame', GAMES[key].title, text);
+    el('div', 'psmark', w ? '✓' : '', r);
+    r.title = w ? 'Won' : 'Not yet';
+  }
+  // The two great yokai behind the gate.
+  el('div', 'pgroup', 'Behind the gate', box);
+  const greats = el('div', 'pseals', undefined, box);
+  for (const b of BOSS_ORDER) {
+    const w = bossWon.has(b.id);
+    const r = el('div', w ? 'pseal won' : 'pseal', undefined, greats);
+    el('div', 'psseal', b.seal, r);
+    const text = el('div', 'pstext', undefined, r);
+    el('div', 'psname', b.name, text);
+    el('div', 'psgame', w ? 'felled' : 'waiting', text);
+    el('div', 'psmark', w ? '✓' : '', r);
+  }
+  button(box, 'Back', 'pbtn', back);
+}
+
 /** What has been found, and the shape of what has not. */
 function renderItems(box) {
   const all = collection();
@@ -198,6 +235,7 @@ function show(page) {
   const card = el('div', 'pcard', undefined, box);
   if (page === 'settings') renderSettings(card);
   else if (page === 'keys') renderKeys(card);
+  else if (page === 'seals') renderSeals(card);
   else if (page === 'items') renderItems(card);
   else if (page === 'quit') renderQuit(card);
   else renderRoot(card);

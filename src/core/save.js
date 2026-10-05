@@ -92,6 +92,7 @@ function saveProgress(progress) {
     held: [...(progress.held || [])],
     opened: [...(progress.opened || [])],
     pet: progress.pet || null,
+    errands: [...(progress.errands || [])],
   };
   const settings = {};
   for (const key of Object.keys(DEFAULT_SETTINGS)) settings[key] = CFG[key];
@@ -113,6 +114,7 @@ function loadProgress() {
     char: p.char, won: list(p.won), bossWon: list(p.bossWon), slain: list(p.slain),
     held: list(p.held), opened: list(p.opened),
     pet: typeof p.pet === 'string' ? p.pet : null,
+    errands: list(p.errands),
   };
   // Nothing found and nothing won is not a run worth continuing.
   if (!progress.won.length && !progress.bossWon.length && !progress.held.length) return null;

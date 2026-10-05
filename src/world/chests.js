@@ -19,7 +19,7 @@ import { openDialog } from '../ui/dialog.js';
 import { R } from '../config/settings.js';
 import { damp } from '../utils/math.js';
 import { mulberry32 } from '../utils/random.js';
-import { randTangent, randomDir } from '../utils/sphere.js';
+import { offsetDir, randTangent, randomDir } from '../utils/sphere.js';
 import { isFree, occupy } from './colliders.js';
 import { heightAt } from './terrain.js';
 
@@ -110,6 +110,31 @@ function chestSpot(rng, clear) {
   return null;
 }
 
+/** Walkable ground within `maxR` world units of `anchor`, or null. */
+function spotNearDir(rng, anchor, maxR, clear) {
+  for (let i = 0; i < 500; i++) {
+    const d = offsetDir(anchor, rng() * 6.283, (0.4 + rng() * maxR) / R);
+    if (heightAt(d) < R + 0.6 || !isFree(d, clear)) continue;
+    return d;
+  }
+  return null;
+}
+
+/**
+ * Places worth searching, rather than ten boxes scattered at random.
+ *
+ * Anything that cannot be honoured — a pole that happens to be ocean, a hill with no
+ * room left beside it — simply falls back to open ground, so the chest still exists.
+ */
+function hidingPlaces(anchors) {
+  const out = [];
+  if (anchors.north) out.push({ at: anchors.north, within: 9, clear: 2.5 });
+  if (anchors.south) out.push({ at: anchors.south, within: 9, clear: 2.5 });
+  if (anchors.gate) out.push({ at: anchors.gate, within: 11, clear: 3 });
+  for (const h of anchors.hills || []) out.push({ at: h, within: 8, clear: 2.5 });
+  return out;
+}
+
 /**
  * Scatter the chests, one per keepsake.
  *
@@ -118,13 +143,17 @@ function chestSpot(rng, clear) {
  * after it — the petals, and every critter made once play begins — for no reason beyond
  * where a box happened to land.
  */
-function createChests(into) {
+function createChests(into, anchors = {}) {
   chests.length = 0;
   const rng = mulberry32(0x0C4E);
+  const places = hidingPlaces(anchors);
   OUTDOOR_ITEMS.forEach((item, i) => {
-    // Wide clearance: a chest should be found in quiet ground, not underfoot in the
-    // middle of a fight. Anything closer crowds the yokai that are already placed.
-    const dir = chestSpot(rng, 4.5);
+    // The first few go somewhere worth searching — the poles, the sealed gate, the
+    // hilltops. The rest take quiet open ground, clear of anything already placed:
+    // closer than this and a chest sits underfoot in the middle of a fight.
+    const place = places[i];
+    const dir = (place && spotNearDir(rng, place.at, place.within, place.clear))
+      || chestSpot(rng, 4.5);
     if (!dir) return;
     // Reserved ground but no solid collider, which is how `world/scenery.js` treats
     // every prop this small — a chest you cannot walk past would snag the critters.

@@ -33,12 +33,19 @@ const ITEM_DEFS = [
     line: 'Flat, grey, and perfectly weighted for skipping. The ponds here are small, though.' },
   { id: 'charm', name: 'Paper Charm', seal: '符',
     line: 'The ink has run. Whatever it was warding off, it seems to have worked.' },
+  // Given, not found. See `errand` in data/npcDefs.js.
+  { id: 'pearl', name: 'River Pearl', seal: '珠', errand: true,
+    line: 'Small, lopsided and faintly green. Goro swears the river only gives one a year.' },
+  { id: 'whisk', name: 'Bamboo Whisk', seal: '筅', errand: true,
+    line: 'A hundred tines split from a single piece. Hanako made it, and will not say how long it took.' },
 ];
 
 const ITEMS = Object.fromEntries(ITEM_DEFS.map(d => [d.id, d]));
 /** Left in chests out on the planet. */
-const OUTDOOR_ITEMS = ITEM_DEFS.filter(d => !d.indoors);
+const OUTDOOR_ITEMS = ITEM_DEFS.filter(d => !d.indoors && !d.errand);
 /** Left in the buildings you can walk into. */
 const INDOOR_ITEMS = ITEM_DEFS.filter(d => d.indoors);
+/** Given by a villager who asked you for something first. */
+const ERRAND_ITEMS = ITEM_DEFS.filter(d => d.errand);
 
-export { INDOOR_ITEMS, ITEMS, ITEM_DEFS, OUTDOOR_ITEMS };
+export { ERRAND_ITEMS, INDOOR_ITEMS, ITEMS, ITEM_DEFS, OUTDOOR_ITEMS };

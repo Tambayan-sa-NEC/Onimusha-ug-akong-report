@@ -11,7 +11,7 @@ import { startAction } from '../entities/models/humanoid.js';
 import { emote } from '../render/effects/emotes.js';
 import { beacon } from '../render/effects/rings.js';
 import { Sound } from '../systems/audio.js';
-import { held, opened } from '../core/keepsakes.js';
+import { errands, held, opened } from '../core/keepsakes.js';
 import { saveProgress } from '../core/save.js';
 import { openDialog } from '../ui/dialog.js';
 import { ending, playEnding } from '../ui/ending.js';
@@ -74,7 +74,7 @@ function resolveChallenge(c, win) {
     if (c.g.boss) bossWon.add(h.def.id);
     else { won.add(h.def.game); if (c.g.fight) slain.add(h.def.id); }   // a battle win is a blade kill
     buildSeals();
-    if (player.char) saveProgress({ char: player.char.id, won, bossWon, slain, held, opened, pet: petId() });
+    if (player.char) saveProgress({ char: player.char.id, won, bossWon, slain, held, opened, errands, pet: petId() });
   }
   setStatus(win ? 'Seal earned!' : 'Try again next time you meet.');
 }

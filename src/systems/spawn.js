@@ -16,7 +16,7 @@ import { Onibi } from '../entities/yokai/Onibi.js';
 import { PETAL_N, respawnPetal } from '../render/effects/petals.js';
 import { pick } from '../utils/random.js';
 import { localPoint, offsetDir, randTangent, randomDir, tangentToward } from '../utils/sphere.js';
-import { gate } from '../world/SealedGate.js';
+import { GATE_DIR, gate } from '../world/SealedGate.js';
 import { createChests } from '../world/chests.js';
 import { createDoors } from '../world/houses.js';
 import { findSpot, occupy, spotNear } from '../world/colliders.js';
@@ -89,7 +89,11 @@ function spawnWorld() {
   for (let i = 0; i < PETAL_N; i++) respawnPetal(i, true);
 
   // Last of all, and from their own streams, so nothing above is disturbed.
-  createChests(npcs);
+  createChests(npcs, {
+    north: new V3(0, 1, 0), south: new V3(0, -1, 0),
+    gate: GATE_DIR,
+    hills: HILLS.map(h => h.c),
+  });
   createDoors(npcs, [
     { roomId: 'teahouse', dir: TEA_DIR, fwd: TEA_FWD, label: 'the tea house' },
     { roomId: 'pagodaRoom', dir: PAGODA_DIR, label: 'the pagoda' },
