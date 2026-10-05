@@ -48,3 +48,25 @@
 #bossBar.rage #bossFill { background: linear-gradient(90deg, #c8423a, #f1cf6a); }
 
 @media (max-width: 640px) { #hint { font-size: 11px; } #prompt { bottom: 170px; } #seals span { width: 18px; height: 18px; line-height: 18px; font-size: 11px; } }
+
+/* vitals: hearts, always in the same place whether or not you are fighting */
+#vitals { position: fixed; left: 16px; bottom: 16px; display: none; gap: 3px; padding: 7px 10px;
+  background: var(--washi); border-radius: 4px; box-shadow: 0 2px 10px rgba(70, 40, 30, .12);
+  user-select: none; pointer-events: none; }
+#vitals.show { display: flex; }
+#vitals .heart { font-size: 19px; line-height: 1; color: var(--shu); }
+#vitals .heart.spent { color: #c3b4a3; }
+
+/* a tick on a won seal, so the row is not read by colour alone */
+#seals span { position: relative; }
+#seals span .mark { position: absolute; right: -2px; bottom: -3px; font-size: 9px; font-style: normal;
+  line-height: 1; color: var(--sumi); background: var(--washi); border-radius: 50%; padding: 1px; }
+#seals span.boss .mark { color: #f1cf6a; background: #2a2626; }
+
+/* the controls card says its piece, then bows out */
+#hint { transition: opacity .9s; }
+#hint.fade { opacity: 0; }
+
+/* the ending cutscene wants the screen to itself */
+#seals { transition: opacity .5s; }
+#seals.away { opacity: 0; pointer-events: none; }

@@ -75,25 +75,31 @@ Not features in themselves — two small pieces of groundwork that several featu
 
 ## Planned features
 
-### 1. Better HUD
+### 1. Better HUD — **mostly done**
 
-The in-game overlay — currently the seal row, the prompt bar, the boss bar, and the
-static controls card in `index.html`.
+Built in `src/ui/hud.js`, covered by `tests/hud.test.js`.
 
-- [ ] Show player health persistently. Hearts currently appear only inside the battle
-      panel, so outside a fight you cannot see how hurt you are.
-- [ ] Make the seal row (`#seals`) readable at a glance — which of the five are won,
-      which yokai each belongs to, how far the sealed gate is from opening. Do not rely
-      on colour alone to signal "won"; see *accessibility* below.
-- [ ] Retire the permanent controls card. It covers a quarter of the screen in every
-      screenshot. Fold it into the pause screen's keymap page, or fade it after the
-      first minute of play.
-- [ ] Give the challenge panel, boss bar, and dialogue box one consistent visual
-      language — spacing, corners, type scale.
-- [ ] Decide what the HUD does during the ending cutscene. It should almost certainly
-      get out of the way.
+- [x] Show player health persistently — a heart row sits bottom-left whenever you are
+      playing. It reads the live fight when there is one and shows a full row otherwise,
+      and keeps showing what a fight cost until that fight is torn down.
+- [x] Make the seal row readable without colour — a won seal now carries a tick as well
+      as the fill, and its tooltip says "won" rather than just naming the challenge.
+- [x] Retire the permanent controls card — it fades after 45 seconds of play
+      (`HINT_FADE_AFTER`) and comes back when you return to the menu. The same
+      information lives on the pause screen's Controls page.
+- [x] Decide what the HUD does during the ending cutscene — the hearts and the seal book
+      both stand aside.
+- [ ] **Still open:** the challenge panel, boss bar and dialogue box still have their own
+      spacing, corners and type scale. Pulling them onto one scale is the remaining work.
+- [ ] **Still open:** the seal row does not say which yokai each seal belongs to beyond
+      its tooltip.
 
-*Lives in:* `styles/hud.css`, `ui/`, `index.html`.
+*Lives in:* `ui/hud.js`, `styles/hud.css`, `index.html`.
+
+**Worth knowing:** damage only happens inside a fight — `hurtPlayer` is only reached from
+`combat/battle.js` and `combat/bossBattle.js`, and each fight starts you at full health.
+So the heart row is a consistent place to read your health, not a resource you manage
+between fights. Making health persist across fights would be a real balance change.
 
 ---
 

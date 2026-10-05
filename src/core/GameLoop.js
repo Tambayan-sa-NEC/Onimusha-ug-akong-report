@@ -14,6 +14,7 @@ import { updateCamera } from '../systems/camera.js';
 import { updateHunts } from '../systems/hunting.js';
 import { updateInteraction } from '../systems/interaction.js';
 import { updateEnding } from '../ui/ending.js';
+import { updateHud } from '../ui/hud.js';
 import { bosses, critters, npcs } from '../world/entities.js';
 import { CLOUD_AXIS, cloudRoot } from '../world/scenery.js';
 import { water } from '../world/terrain.js';
@@ -49,6 +50,7 @@ function frame() {
   cloudRoot.rotateOnAxis(CLOUD_AXIS, dt * 0.012);
   updateCamera(dt, time);
   updateEnding(dt);
+  updateHud(dt);
 
   renderer.render(scene, camera);
 }
