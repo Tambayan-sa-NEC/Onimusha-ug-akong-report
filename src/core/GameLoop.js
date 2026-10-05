@@ -14,6 +14,7 @@ import { updateCamera } from '../systems/camera.js';
 import { updateHunts } from '../systems/hunting.js';
 import { updateInteraction } from '../systems/interaction.js';
 import { updateEnding } from '../ui/ending.js';
+import { updatePreviews } from '../ui/charPreview.js';
 import { updateHud } from '../ui/hud.js';
 import { bosses, critters, npcs } from '../world/entities.js';
 import { CLOUD_AXIS, cloudRoot } from '../world/scenery.js';
@@ -51,6 +52,7 @@ function frame() {
   updateCamera(dt, time);
   updateEnding(dt);
   updateHud(dt);
+  if (!session.started) updatePreviews(dt);   // the figures on the character cards
 
   renderer.render(scene, camera);
 }

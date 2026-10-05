@@ -42,19 +42,23 @@ function placePlayer(T, host, dist, face) {
 
 /* ---------------------------- the select screen ---------------------------- */
 
-await test('the game opens on the select screen, not in play', async () => {
+await test('the game opens on the title, not in play and not yet choosing', async () => {
   const { T, els } = await menu();
   eq(T.started, false, 'not started');
   assert(!els('overlay').className.includes('hide'), 'the overlay is up');
-  eq(T.menu.cards.length, 2, 'two characters offered');
+  eq(T.menu.page, 'title', 'on the title page');
+  eq(T.menu.cards.length, 0, 'no character cards built yet');
+  assert(T.menu.items.length > 0, 'but the title offers somewhere to go');
 });
 
 await test('both characters are built from the registry', async () => {
   const { T } = await menu();
+  T.showPage('select');
   const names = T.CHAR_ORDER.map(id => T.CHARACTERS[id].name);
   eq(names.join(' / '), 'The Rōnin / The Kunoichi', 'roster');
-  eq(T.menu.cards.map(c => c.children[0].textContent).join(''), '侍忍', 'seals on the cards');
-  eq(T.menu.cards.map(c => c.children[1].textContent).join(' / '), names.join(' / '), 'names on the cards');
+  const part = (card, cls) => card.children.find(c => c.className === cls);
+  eq(T.menu.cards.map(c => part(c, 'seal').textContent).join(''), '侍忍', 'seals on the cards');
+  eq(T.menu.cards.map(c => part(c, 'pname').textContent).join(' / '), names.join(' / '), 'names on the cards');
 });
 
 await test('a stray keypress does not start the game — a choice is required', async () => {
@@ -74,6 +78,7 @@ await test('start() refuses anything that is not a character', async () => {
 
 await test('arrows move the highlight and Enter begins', async () => {
   const { g, T, els } = await menu();
+  T.showPage('select');
   eq(T.menu.i, 0, 'the rōnin is highlighted first');
   assert(T.menu.cards[0].className.includes('on'), 'card 0 marked');
   g.press('ArrowRight');
@@ -89,6 +94,7 @@ await test('arrows move the highlight and Enter begins', async () => {
 
 await test('clicking a card picks that character', async () => {
   const { T } = await menu();
+  T.showPage('select');
   T.menu.cards[1].dispatch('click');
   eq(T.started, true, 'started');
   eq(T.player.char.id, 'shinobi', 'the clicked one');

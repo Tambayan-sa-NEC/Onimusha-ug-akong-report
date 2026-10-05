@@ -149,33 +149,31 @@ let the settings screen write to it.
 
 ---
 
-### 3. Better landing page / main menu
+### 3. Better landing page / main menu — **done**
 
-Today `index.html` shows one overlay card that is both the title and the character
-select, over a live view of the planet.
+- [x] Title, select and credits are separate pages inside the overlay card, so the flow
+      is Title → Select → Play. `Esc` backs out of select and credits.
+- [x] Continue (only when a run is worth resuming), Settings, Controls, Credits. Settings
+      and Controls reuse the pause screen's own pages rather than a second copy.
+- [x] The live planet still turns behind every page.
+- [x] A quieter title card: the name, one line, and a short list — rather than two
+      paragraphs of rules before you have chosen anyone.
 
-- [ ] Separate title from character select, so the flow is Title → Select → Play.
-- [ ] Add: Continue (needs persistence), Settings, Controls, Credits.
-- [ ] Keep the live planet behind it — that it is the running game, not a static image,
-      is the best thing about the current screen.
-- [ ] Give the title card a stronger first impression: the game is visually confident
-      and the opening card undersells it.
-
-*Lives in:* `index.html`, `styles/base.css`, `ui/characterSelect.js`.
+*Lives in:* `ui/characterSelect.js`, `index.html`, `styles/base.css`.
 
 ---
 
-### 4. Better character selection
+### 4. Better character selection — **mostly done**
 
-- [ ] Show each character in 3D — they are built from primitives in
-      `entities/models/humanoid.js` and could be posed and turned on the select screen.
-- [ ] Preview the real difference between them: five hearts and a heavy three-hit combo
-      versus three hearts, a thrown kunai, and a shadow dash. The current blurb states
-      this in text; show it.
-- [ ] Support gamepad and keyboard navigation properly. `menuKey()` handles arrows and
-      Enter today; the cards are the only mouse target.
-- [ ] `config/characters.js` holds the `look` objects — the natural seam if a third
-      character is ever added. Worth keeping that in mind while restructuring.
+- [x] Each card shows the character in 3D, built from the same `makeHumanoid` the game
+      uses, turning slowly on its own small renderer (`ui/charPreview.js`) so nothing it
+      does can disturb the planet behind the menu.
+- [x] A stat block shows the difference rather than describing it: hearts as filled and
+      hollow glyphs, pace, reach, escape, and whether anyone walks with you.
+- [x] Keyboard navigation works on every page, and accepts either axis.
+- [x] Nothing is hard-coded to two characters — the cards, the previews and the stat
+      block are all built from `CHAR_ORDER` and `CHARACTERS`.
+- [ ] **Still open:** gamepad support. No page reads a gamepad, menu or otherwise.
 
 ---
 

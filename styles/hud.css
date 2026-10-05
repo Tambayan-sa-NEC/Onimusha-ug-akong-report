@@ -1,5 +1,6 @@
 /* Everything drawn over the game while you play. */
 
+#dialog { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); width: min(600px, 88vw);
   padding: 14px 20px 16px 74px; background: var(--washi); border-radius: 4px; box-sizing: border-box;
   box-shadow: 0 6px 24px rgba(70, 40, 30, .18); opacity: 0; transition: opacity .25s; pointer-events: none; }
 #dialog.show { opacity: 1; }

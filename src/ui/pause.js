@@ -14,7 +14,7 @@ import { toMenu } from './characterSelect.js';
 import { $ } from '../utils/dom.js';
 
 /** Which page is showing, and whether the panel is up at all. */
-const pause = { open: false, page: 'root', listening: null };
+const pause = { open: false, page: 'root', listening: null, fromTitle: false };
 
 /** How a key code reads to a person: 'KeyW' -> 'W', 'ArrowUp' -> '↑'. */
 const ARROWS = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→' };
@@ -106,7 +106,7 @@ function renderSettings(box) {
     savePrefs();
     show('settings');
   });
-  button(box, 'Back', 'pbtn', () => show('root'));
+  button(box, 'Back', 'pbtn', back);
 }
 
 function checkbox(box, label, key, after) {
@@ -139,7 +139,7 @@ function renderKeys(box) {
     });
   }
   button(box, 'Reset to defaults', 'pbtn', () => { resetBinds(); savePrefs(); show('keys'); });
-  button(box, 'Back', 'pbtn', () => { pause.listening = null; show('root'); });
+  button(box, 'Back', 'pbtn', () => { pause.listening = null; back(); });
 }
 
 /** Draw whichever page is current. */
@@ -156,9 +156,23 @@ function show(page) {
 
 /* ------------------------------- open and close ------------------------------ */
 
+/** Back out of a settings or controls page: to the pause root, or off the title. */
+function back() { if (pause.fromTitle) closePause(); else show('root'); }
+
+/** The same settings and controls pages, reached from the title screen. */
+function openFromTitle(page) {
+  if (session.started) return;
+  pause.open = true;
+  pause.fromTitle = true;
+  pause.listening = null;
+  show(page);
+  panel().classList.add('show');
+}
+
 function openPause() {
   if (!session.started || pause.open) return;
   pause.open = true;
+  pause.fromTitle = false;
   session.paused = true;
   pause.listening = null;
   show('root');
@@ -167,6 +181,7 @@ function openPause() {
 function closePause() {
   if (!pause.open) return;
   pause.open = false;
+  pause.fromTitle = false;
   session.paused = false;
   pause.listening = null;
   panel().classList.remove('show');
@@ -194,7 +209,7 @@ function pauseKey(code) {
     return true;
   }
   if (code === 'Escape') {
-    if (pause.page === 'root') closePause();
+    if (pause.page === 'root' || pause.fromTitle) closePause();
     else show('root');
     return true;
   }
@@ -209,4 +224,4 @@ function initPause() {
   panel().classList.remove('show');
 }
 
-export { closePause, initPause, keyLabel, openPause, pause, pauseKey, quitToMenu, togglePause };
+export { closePause, initPause, keyLabel, openFromTitle, openPause, pause, pauseKey, quitToMenu, togglePause };

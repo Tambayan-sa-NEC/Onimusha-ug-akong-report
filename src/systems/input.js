@@ -32,9 +32,10 @@ const acting = action => down(...codesFor(action));
 window.addEventListener('keydown', e => {
   // Alt is held off the browser too, or Windows hands the keypress to the menu bar.
   if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'AltLeft', 'AltRight'].includes(e.code)) e.preventDefault();
-  if (!session.started) { if (!e.repeat) menuKey(e.code); return; }
-  // The pause screen comes before everything, so it can always be reached and left.
+  // The pause panel comes before everything, so it can always be reached and left —
+  // including when it was opened from the title screen.
   if (pause.open) { if (!e.repeat) pauseKey(e.code); return; }
+  if (!session.started) { if (!e.repeat) menuKey(e.code); return; }
   keys[e.code] = true;
   if (e.repeat) return;
   if (isBound('pause', e.code)) { clearInput(); togglePause(); return; }
