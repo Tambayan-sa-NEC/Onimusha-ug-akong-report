@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { ITEMS, OUTDOOR_ITEMS } from '../data/itemDefs.js';
 import { isOpened, markOpened, takeItem } from '../core/keepsakes.js';
 import { worldRoot } from '../core/Stage.js';
+import { cheer } from '../entities/pets.js';
 import { SurfaceBody } from '../physics/SurfaceBody.js';
 import { emote } from '../render/effects/emotes.js';
 import { burst } from '../render/effects/sparks.js';
@@ -79,6 +80,7 @@ function makeChestFixture(id, itemId, dir, fwd, parent = worldRoot) {
       openDialog(this, def
         ? `${def.name}.\n${def.line}`
         : 'Empty, and still smelling faintly of cedar.');
+      cheer('find');
       onChestOpened(this);
     },
     update(dt) {

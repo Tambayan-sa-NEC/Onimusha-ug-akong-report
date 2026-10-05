@@ -13,10 +13,17 @@ import { pick, rand, rr } from '../utils/random.js';
 import { tangentA } from '../utils/scratch.js';
 import { hitsCollider } from '../world/colliders.js';
 import { onLand } from '../world/terrain.js';
+import { befriend, pet, petName } from './pets.js';
+
+/** Spawn order is deterministic, so a counter gives every animal a stable name. */
+let made = 0;
+const resetCritterIds = () => { made = 0; };
 
 class Quadruped {
   constructor(kind, look, dir) {
     this.kind = kind;
+    this.id = `${kind}${made++}`;
+    this.tame = false;
     this.m = makeQuadruped({ ...look, kind, scale: kind === 'dog' ? 1.25 : 0.9 });
     this.b = new SurfaceBody(this.m.root, dir);
     worldRoot.add(this.m.root);
@@ -29,6 +36,22 @@ class Quadruped {
   say(text) {
     emote(this.b.obj.position, this.b.dir, text, this.kind === 'dog' ? 1.3 : 1.0);
     Sound.sfx(this.kind === 'dog' ? 'bark' : 'meow', nearVol(this.b.obj.position));
+  }
+  /** Cats and dogs can be talked round. The wolf is already spoken for. */
+  get tameable() { return !this.isWolf && !this.hunting && this !== pet.animal; }
+  /** Anything that is yours, or could be, is worth walking up to. */
+  get greetable() { return !this.hunting && (this.tameable || this === pet.animal); }
+  prompt() {
+    if (this === pet.animal) return `<kbd>E</kbd> ${petName(this)} is with you`;
+    return this.tameable ? `<kbd>E</kbd> Befriend the ${this.kind}` : '';
+  }
+  interact() {
+    if (this === pet.animal) {   // already yours: just a hello
+      this.say(this.kind === 'cat' ? 'にゃ♪' : '♥');
+      if (this.b.grounded) this.b.jump(3);
+      return;
+    }
+    befriend(this);
   }
   /** Charming reaction when the samurai comes close. */
   react(pd) {
@@ -46,6 +69,7 @@ class Quadruped {
     let target = 0, wag = 2;
 
     if (this.hunting) { this.state = 'hunt'; target = this.huntGait; wag = 12; }   // no case below: the hunt steers
+    else if (this.tame) { this.state = 'follow'; this.timer = 1e9; this.cd = 1e9; }   // yours, and staying
     else if (session.started && this.cd <= 0 && pd < (this.kind === 'dog' ? 5 : 3.5)) this.react(pd);
     switch (this.state) {
       case 'idle':
@@ -71,8 +95,8 @@ class Quadruped {
         target = pd > 2.2 ? Math.min(5.5, pd * 1.4) : 0;
         wag = 16;
         if (b.grounded && pd < 3 && Math.random() < dt * 0.8) b.jump(3);
-        if (Math.random() < dt * 0.2) this.say('ワン!');
-        if (this.timer <= 0 || pd > 14) { this.state = 'idle'; this.timer = rr(2, 4); }
+        if (Math.random() < dt * 0.2) this.say(this.kind === 'cat' ? 'にゃ' : 'ワン!');
+        if (!this.tame && (this.timer <= 0 || pd > 14)) { this.state = 'idle'; this.timer = rr(2, 4); }
         break;
     }
     this.speed += (target - this.speed) * damp(6, dt);
@@ -90,4 +114,4 @@ class Quadruped {
   }
 }
 
-export { Quadruped };
+export { Quadruped, resetCritterIds };

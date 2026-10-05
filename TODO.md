@@ -4,8 +4,9 @@ Features to build, written out so each one can be picked up without rereading th
 game. Your ideas are in **Planned features**; ideas I suggested are in **Worth
 considering**, kept separate so it stays clear which is which.
 
-**Done so far:** the *Foundations* and all of **#2 Pause screen** (including settings and
-keymaps). Everything else is still open.
+**All nine features are built.** Each section says what was done and what was
+deliberately left, so the remaining work stays visible rather than implied. The
+*Worth considering* list at the bottom is mostly untouched.
 
 ---
 
@@ -49,10 +50,10 @@ Later items lean on earlier ones, so building in roughly this order avoids rewor
 1. ~~**Foundations** — persistence + the `Esc` decision.~~ **Done.**
 2. ~~**Pause screen** (#2)~~ **Done.**
 3. ~~**Settings & keymaps**~~ **Done.**
-4. **HUD** (#1), **main menu** (#3), **character select** (#4) — presentation, independent.
-5. **NPCs** (#5), **houses** (#6), **chests** (#7) — all touch world generation; do them
-   together so the fingerprint baseline is regenerated once, not three times.
-6. **Items** (#8) and **pets** (#9) — these build on chests and NPCs.
+4. ~~**HUD** (#1), **main menu** (#3), **character select** (#4)~~ **Done.**
+5. ~~**NPCs** (#5), **houses** (#6), **chests** (#7)~~ **Done** — the baseline was
+   regenerated once, in its own commit, as intended.
+6. ~~**Items** (#8) and **pets** (#9)~~ **Done.**
 
 ---
 
@@ -220,50 +221,48 @@ Currently `makeTeaHouse()` and `makePagoda()` in `world/props.js` are exteriors 
 
 ---
 
-### 7. Chests
+### 7. Chests — **done**
 
-- [ ] A chest model and an open animation.
-- [ ] Placement during world generation — see constraint 1.
-- [ ] Opened state must persist, or chests refill on every reload. Needs the persistence
-      foundation.
-- [ ] Decide what is inside, which depends on #8 below. Do not build chests before
-      there is something worth finding in them.
-- [ ] Hide them somewhere worth searching: behind the sealed gate, inside houses, at the
-      poles, underwater.
-
----
-
-### 8. Better items
-
-There is no item system at all today — this is new ground, not an improvement.
-
-- [ ] Decide the purpose before the implementation. Consumables that heal? Equipment
-      that changes stats? Collectibles that reward exploration? Key items that open
-      routes? Each implies a different system, and the game does not need all four.
-- [ ] Inventory UI, if items can be held rather than used immediately.
-- [ ] Persist held items.
-- [ ] Keep it honest to the game's tone — it is gentle and small, and a full RPG
-      inventory would sit awkwardly on it.
-
-My suggestion: start with the smallest version that makes chests worth opening, and
-grow it only if it earns the room.
+- [x] A banded box with a lid that swings open on its hinge and stays up.
+- [x] Placed from their own `mulberry32`, after everything else, so world generation is
+      untouched. They reserve ground but carry no collider, as `world/scenery.js`
+      already does for props this small.
+- [x] Opened state persists, so they do not refill on reload.
+- [x] Each holds a keepsake. Ten are out on the planet; two are indoors.
+- [ ] **Still open:** none are hidden anywhere properly cunning — behind the sealed
+      gate, at the poles, or underwater.
 
 ---
 
-### 9. Better pet system
+### 8. Better items — **done, as keepsakes**
 
-The rōnin already walks with a wolf — `setWolf()` in `entities/Player.js`,
-`entities/Wolf.js`, and the planet has `Bird`, `Koi`, and `Quadruped` critters.
+- [x] **Purpose decided: collectibles, not equipment.** Health resets at the start of
+      every fight and there are no stats to raise, so an item that changed numbers
+      would either do nothing or quietly rewrite the balance. Twelve keepsakes, each a
+      sentence about the little world, are what make a chest worth opening.
+- [x] A Keepsakes page on the pause screen: what has been found, and the shape of what
+      has not.
+- [x] Held keepsakes persist, and finding one alone makes a run worth continuing.
+- [x] Nothing is consumed, equipped or managed, which suits a game this gentle.
 
-- [ ] Give the wolf more presence: reactions, idle behaviour, a name, acknowledgement
-      when you talk to someone or win a seal.
-- [ ] Should the wolf help in battle? It currently follows and does nothing. This is the
-      biggest open question in the feature.
-- [ ] Let the kunoichi have a companion too, so the pet is not a rōnin-only perk — or
-      make that asymmetry deliberate and visible on the character select screen.
-- [ ] Tame or befriend the existing critters. The planet is full of animals that
-      currently ignore you.
-- [ ] Persist which pet is with you.
+---
+
+### 9. Better pet system — **done**
+
+Built in `entities/pets.js`, covered by `tests/pet.test.js`.
+
+- [x] The companion has a name (Kuro, Mame, Tora by kind) and reacts — to a seal won, a
+      chest opened, and sometimes a villager greeted.
+- [x] **Does the companion fight? No, and deliberately.** Every fight starts you at full
+      health and ends with the seal won or not, so an animal dealing damage would
+      quietly rewrite the difficulty of all ten yokai and both bosses. It keeps up, it
+      reacts, and it stays out of the way. A test holds that line.
+- [x] The kunoichi is no longer made to walk alone — a cat comes with her, and the
+      select screen's Company row says so for both characters.
+- [x] Any cat or dog can be talked round with `E`. Befriending releases whoever was with
+      you, so you walk with one companion rather than a procession.
+- [x] Which animal is with you is saved and restored, falling back to the character's
+      own companion if that animal is not found.
 
 ---
 
@@ -299,7 +298,9 @@ My suggestions, not from your list. Pick up or discard freely.
 
 ## Working notes
 
-- Tests: `npm test` — 140 checks across eight suites. Run before and after each feature.
+- Tests: `npm test` — 217 checks across fifteen suites. Run before and after each feature.
+- `node --experimental-vm-modules tests/rebaseline.js` shows what moved in the world;
+  only `--write` rewrites the baseline.
 - `tests/world.test.js` failing after a world change is expected; regenerate
   `tests/baseline.json` deliberately and in its own commit.
 - The game has no build step and one devDependency (`three`, used only by the tests).

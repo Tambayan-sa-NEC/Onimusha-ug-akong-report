@@ -10,6 +10,7 @@ import { held, opened } from './keepsakes.js';
 import { saveProgress } from './save.js';
 import { bossWon, slain, won } from '../challenges/system.js';
 import { player } from '../entities/Player.js';
+import { petId } from '../entities/pets.js';
 import { setChestListener } from '../world/chests.js';
 import { initHud } from '../ui/hud.js';
 import { initPause } from '../ui/pause.js';
@@ -39,7 +40,7 @@ function startGame() {
   initHud();          // vitals, the seal book, the fading controls card
   // Finding something is progress too, so a chest writes the run down as a win does.
   setChestListener(() => {
-    if (player.char) saveProgress({ char: player.char.id, won, bossWon, slain, held, opened });
+    if (player.char) saveProgress({ char: player.char.id, won, bossWon, slain, held, opened, pet: petId() });
   });
   void arena;          // the arena system is wired in by the gate
   startLoop();

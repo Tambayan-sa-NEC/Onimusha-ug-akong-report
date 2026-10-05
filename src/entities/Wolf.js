@@ -10,6 +10,9 @@ const WOLF_LOOK = { color: '#6f6b73', belly: '#cfc8c0', ear: '#49454f' };
 class Wolf extends Quadruped {
   constructor(dir) {
     super('dog', WOLF_LOOK, dir);
+    this.isWolf = true;
+    this.id = 'wolf';
+    this.tame = true;
     this.m.root.scale.setScalar(1.5);   // Quadruped fixes the dog scale, so size it here
     this.state = 'follow';
     this.howl = 4;

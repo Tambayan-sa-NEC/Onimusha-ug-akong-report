@@ -88,3 +88,31 @@
   background: #fdeceb;
   color: var(--shu);
 }
+
+/* keepsakes: a cabinet of what has been found, and gaps where it has not */
+.pitems {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  margin: 4px 0 16px;
+}
+.pitem {
+  padding: 8px 4px 9px;
+  background: #fffaf0;
+  border: 1px solid #ddcdb6;
+  border-radius: 4px;
+  text-align: center;
+  opacity: .55;
+}
+.pitem.found { opacity: 1; border-color: #c9a227; background: #fffdf6; }
+.piseal {
+  width: 30px; height: 30px; margin: 0 auto 5px;
+  border-radius: 50%;
+  background: #cdbca8; color: #fffaf0;
+  font-size: 16px; line-height: 30px;
+}
+.pitem.found .piseal { background: var(--shu); }
+.piname { font-size: 10.5px; line-height: 1.35; letter-spacing: .01em; }
+.piline { display: none; }        /* the line belongs in the tooltip, not the grid */
+
+@media (max-width: 520px) { .pitems { grid-template-columns: repeat(3, 1fr); } }

@@ -14,11 +14,13 @@ import { clearKeepsakes, held, opened, takeItem } from '../core/keepsakes.js';
 import { hasProgress, loadProgress, saveProgress } from '../core/save.js';
 import { session } from '../core/Session.js';
 import { setCharacter, setWolf, player } from '../entities/Player.js';
+import { befriend, pet, petId } from '../entities/pets.js';
 import { beacon } from '../render/effects/rings.js';
 import { Sound } from '../systems/audio.js';
 import { HUNT, endHunt, hunter } from '../systems/hunting.js';
 import { clearInput } from '../systems/input.js';
 import { resetChests } from '../world/chests.js';
+import { critters } from '../world/entities.js';
 import { clearPreviews, createPreview } from './charPreview.js';
 import { clearPrompt, closeDialog } from './dialog.js';
 import { openFromTitle } from './pause.js';
@@ -186,13 +188,18 @@ function continueRun() {
   resetChests();                       // lids match what was already opened
   buildSeals();
   start(saved.char);
+  // Whoever you were walking with, if they are still out there.
+  if (saved.pet) {
+    const back = critters.find(c => c.id === saved.pet);
+    if (back && back !== pet.animal) befriend(back);
+  }
   return true;
 }
 
 /** Write down where the run has got to. Cheap, and only ever loses the last seal. */
 function recordProgress() {
   if (!player.char) return;
-  saveProgress({ char: player.char.id, won, bossWon, slain, held, opened });
+  saveProgress({ char: player.char.id, won, bossWon, slain, held, opened, pet: petId() });
 }
 
 /** Step back to the opening screens, leaving nothing of this character behind. */

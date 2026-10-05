@@ -11,6 +11,8 @@ import { CFG } from '../config/settings.js';
 import { session } from '../core/Session.js';
 import { scene } from '../core/Stage.js';
 import { Wolf } from './Wolf.js';
+import { Quadruped } from './Quadruped.js';
+import { adopt, release } from './pets.js';
 import { COMBAT_ACTIONS, applyAction, makeHumanoid, poseHumanoid, startAction } from './models/humanoid.js';
 import { SurfaceBody } from '../physics/SurfaceBody.js';
 import { moveWithSlide } from '../physics/movement.js';
@@ -41,6 +43,22 @@ scene.add(player.h.root);
 let wolf = null;
 /** The rōnin's companion. Lives in `critters`, so it is never a collider, a sword
     target or a challenge host — it cannot touch his combat or difficulty. */
+/**
+ * Put the character's companion beside them. The rōnin's wolf is his own class; the
+ * kunoichi is joined by a cat that is otherwise an ordinary critter, so either can be
+ * swapped for anything else you talk round later.
+ */
+function setStarterPet(c) {
+  release();
+  if (c.pet === 'wolf') { adopt(wolf); return; }
+  if (c.pet !== 'cat') return;
+  const d = spotNear([localPoint(SPAWN, SPAWN_FWD, -1.7, 1.5)], 0.4) || SPAWN.clone();
+  const cat = new Quadruped('cat', { color: '#2f2c33', belly: '#d9d4cc', ear: '#b36a8a' }, d);
+  cat.id = 'pet-cat';
+  critters.push(cat);
+  adopt(cat);
+  cat.state = 'follow'; cat.timer = 1e9; cat.cd = 1e9;
+}
 function setWolf(on) {
   if (wolf) {
     scene.remove(wolf.m.root);
@@ -74,6 +92,7 @@ function setCharacter(id) {
   feedback.hurtGlow = 0;
   clearKunai();
   setWolf(c.wolf);
+  setStarterPet(c);
   $('hintAtk').innerHTML = c.hint;
 }
 const shadowGeo = new THREE.CircleGeometry(0.45, 10).rotateX(-Math.PI / 2);

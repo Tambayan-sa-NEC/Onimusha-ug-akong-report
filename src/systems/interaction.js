@@ -10,7 +10,7 @@ import { emote } from '../render/effects/emotes.js';
 import { HUNT } from './hunting.js';
 import { takeInteract } from './input.js';
 import { closeDialog, dlg, promptBox, ui } from '../ui/dialog.js';
-import { npcs } from '../world/entities.js';
+import { critters, npcs } from '../world/entities.js';
 
 function updateInteraction(dt) {
   const P = player.body.obj.position;
@@ -35,6 +35,12 @@ function updateInteraction(dt) {
     }
     const d = n.b.dist(P);
     if (d < CFG.talkRange && d < bd) { bd = d; near = n; }
+  }
+  // Cats and dogs can be talked round, at arm's length rather than across a field.
+  if (session.started && !ch.active) for (const c of critters) {
+    if (!c.greetable) continue;
+    const d = c.b.dist(P);
+    if (d < CFG.talkRange - 0.6 && d < bd) { bd = d; near = c; }
   }
   const label = !near ? '' : near.prompt ? near.prompt()
     : !near.def.game

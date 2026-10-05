@@ -8,6 +8,7 @@ import { BOSS_ORDER } from '../data/bossDefs.js';
 import { worldRoot } from '../core/Stage.js';
 import { SHARED_LINES } from '../data/npcDefs.js';
 import { player } from './Player.js';
+import { cheer } from './pets.js';
 import { applyAction, makeHumanoid, poseHumanoid, startAction } from './models/humanoid.js';
 import { SurfaceBody } from '../physics/SurfaceBody.js';
 import { emote } from '../render/effects/emotes.js';
@@ -103,6 +104,7 @@ class NPC {
     const pb = player.body;
     if (pb.toward(b.obj.position, tangentA)) pb.turnToward(tangentA, Math.PI);
     startAction(player.h, 'bow');
+    if (Math.random() < 0.3) cheer('talk');
   }
   vanish() {   // ninja trick: poof, reappear a few steps away
     const b = this.b;

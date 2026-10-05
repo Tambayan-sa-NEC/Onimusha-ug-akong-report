@@ -6,6 +6,7 @@ import { tag } from './games/tag.js';
 import { buildSeals } from './seals.js';
 import { BOSS_ORDER } from '../data/bossDefs.js';
 import { player } from '../entities/Player.js';
+import { cheer, petId } from '../entities/pets.js';
 import { startAction } from '../entities/models/humanoid.js';
 import { emote } from '../render/effects/emotes.js';
 import { beacon } from '../render/effects/rings.js';
@@ -69,10 +70,11 @@ function resolveChallenge(c, win) {
   if (h.h) startAction(h.h, win ? 'bow' : 'dance');
   if (win) {
     startAction(player.h, 'spin');
+    cheer('seal');                 // whoever is walking with you is pleased
     if (c.g.boss) bossWon.add(h.def.id);
     else { won.add(h.def.game); if (c.g.fight) slain.add(h.def.id); }   // a battle win is a blade kill
     buildSeals();
-    if (player.char) saveProgress({ char: player.char.id, won, bossWon, slain, held, opened });
+    if (player.char) saveProgress({ char: player.char.id, won, bossWon, slain, held, opened, pet: petId() });
   }
   setStatus(win ? 'Seal earned!' : 'Try again next time you meet.');
 }
