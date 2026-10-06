@@ -268,10 +268,17 @@ Built in `entities/pets.js`, covered by `tests/pet.test.js`.
 
 My suggestions, not from your list. Pick up or discard freely.
 
-- [ ] **A way to find things.** Finding a yokai means wandering the sphere until one
-      appears — when I drove the game to take the README screenshots, it took around
-      forty-five seconds of walking to meet the first one. A compass, a map, or a
-      marker on an unmet yokai would help, and it pairs naturally with the HUD work.
+- [x] **A way to find things.** *Done — `ui/compass.js`. A bearing strip along the top
+      of the screen carries one mark per seal you have yet to win, placed by the nearest
+      yokai hosting it and faded by how far you would have to walk — round the planet
+      rather than through it, since the chord badly understates the journey. Anything
+      past either end is pinned there instead of vanishing, the nearest one a side so
+      the ends never pile up, which stops an empty strip meaning both "nothing left"
+      and "you are facing the wrong way". It stands aside for challenges, rooms and the
+      ending, goes away once every seal is won, and is a setting. Covered by
+      `tests/compass.test.js`.*
+      **Still open:** it points at yokai only. Chests and the sealed gate are still
+      found by wandering, and that belongs with the journal below rather than here.
 - [ ] **Save and continue.** Falls out of the persistence foundation almost for free,
       and the game currently loses all five seals if the tab closes.
 - [ ] **Accessibility pass.** The seal row relies on colour; dialogue speed is fixed;
@@ -303,7 +310,7 @@ My suggestions, not from your list. Pick up or discard freely.
 
 ## Working notes
 
-- Tests: `npm test` — 221 checks across fourteen suites. Run before and after each feature.
+- Tests: `npm test` — 286 checks across sixteen suites. Run before and after each feature.
 - `node --experimental-vm-modules tests/rebaseline.js` shows what moved in the world;
   only `--write` rewrites the baseline.
 - `tests/world.test.js` failing after a world change is expected; regenerate

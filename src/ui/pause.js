@@ -111,6 +111,7 @@ function renderSettings(box) {
   slider(box, 'Text speed', 'textSpeed', 10, 120, 5);
   checkbox(box, 'Larger text', 'largeText', v => applyLargeText(v));
   checkbox(box, 'Day and night', 'dayNight', () => applyDaylight());
+  checkbox(box, 'Compass', 'compass');
 
   button(box, 'Reset to defaults', 'pbtn', () => {
     for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) CFG[k] = v;

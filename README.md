@@ -112,7 +112,7 @@ tests/                  the harness and fourteen suites
 | `systems/` | Cross-cutting per-frame concerns. `input.js` is the only module that touches the keyboard and mouse; everything else reads its state. |
 | `combat/` | `battle.js` is an ordinary fight; `bossBattle.js` extends it. `katana.js` and `kunai.js` are the two characters' weapons. |
 | `challenges/` | The flow that runs any challenge, the seal book, and ten independent mini-games. |
-| `ui/` | DOM only. No module outside `ui/` writes to the document. `ending.js` paints the sumi-e victory cutscene to a canvas when both bosses fall; `pause.js` holds the pause screen, the settings and the keymap editor. |
+| `ui/` | DOM only. No module outside `ui/` writes to the document. `ending.js` paints the sumi-e victory cutscene to a canvas when both bosses fall; `pause.js` holds the pause screen, the settings and the keymap editor; `compass.js` is the bearing strip that points at the yokai whose seals you have yet to win. |
 
 ## Three things worth knowing before changing code
 

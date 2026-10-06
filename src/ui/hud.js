@@ -7,6 +7,7 @@
 import { ch } from '../challenges/system.js';
 import { playerHP } from '../combat/battle.js';
 import { session } from '../core/Session.js';
+import { initCompass, updateCompass } from './compass.js';
 import { ending } from './ending.js';
 import { $ } from '../utils/dom.js';
 
@@ -60,6 +61,7 @@ function updateHud(dt) {
   // The cutscene wants the screen to itself.
   ui.seals.classList.toggle('away', ending.active);
   paintVitals();
+  updateCompass();
 }
 
 /** Grab the elements once, before the first frame. */
@@ -69,6 +71,7 @@ function initHud() {
   ui.seals = $('seals');
   hud.played = 0;
   hud.drawn = '';
+  initCompass();
   paintVitals();
 }
 

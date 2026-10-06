@@ -76,3 +76,24 @@
 /* the ending cutscene wants the screen to itself */
 #seals { transition: opacity .5s; }
 #seals.away { opacity: 0; pointer-events: none; }
+
+/* the compass: which way the yokai you still owe a seal are lying */
+#compass { position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
+  width: min(420px, 46vw); height: 30px; box-sizing: border-box; background: var(--washi);
+  border: var(--panel-edge); border-radius: var(--panel-radius); box-shadow: var(--panel-shadow);
+  display: none; user-select: none; pointer-events: none; }
+#compass.show { display: block; }
+/* the hair-line straight ahead, so the centre reads as a bearing and not as decoration */
+#compass::after { content: ''; position: absolute; left: 50%; top: 5px; bottom: 5px; width: 1px;
+  margin-left: -.5px; background: var(--shu); opacity: .5; }
+#compass .cmark { position: absolute; top: 50%; margin-top: -11px; width: 22px; height: 22px;
+  line-height: 22px; text-align: center; font-size: 14px; color: var(--sumi);
+  transform: translateX(-50%); pointer-events: auto; }
+#compass .cmark.off { display: none; }
+/* past either end of the strip: pinned where it still fits, with a nudge to turn that way */
+#compass .cmark.edge { transform: translateX(0); color: var(--shu); }
+#compass .cmark.edge.right { transform: translateX(-100%); }
+#compass .cmark.edge::before { content: '‹'; position: absolute; left: -7px; top: 0; font-size: 13px; }
+#compass .cmark.edge.right::before { content: '›'; left: auto; right: -7px; }
+
+@media (max-width: 640px) { #compass { width: 64vw; height: 26px; } #compass .cmark { font-size: 12px; } }
