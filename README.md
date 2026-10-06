@@ -12,6 +12,8 @@ Along the way there are twelve keepsakes left in chests, two buildings you can w
 into, and any cat or dog on the planet will come with you if you ask it nicely. A day
 lasts four minutes, so you will see the sun go down more than once.
 
+**[Play it in your browser →](https://tambayan-sa-nec.github.io/Onimusha-ug-akong-report/)**
+
 ## Screenshots
 
 ![The planet, the rōnin, and the wolf that walks with him](docs/screenshots/planet.png)
@@ -44,6 +46,20 @@ The game is plain ES modules with no build step. Browsers refuse to load modules
 Node standard library. An import map in `index.html` resolves the bare `three`
 specifier to a CDN build; the same specifier resolves from `node_modules` under Node,
 so the tests exercise the real modules.
+
+### Deploying
+
+There is no build step and `three` comes from a CDN, so the repository is its own
+deployable artefact. GitHub Pages serves it straight from `main` at the repository
+root, and pushing to `main` republishes the game a minute or two later. Nothing is
+compiled, and there is no workflow file to keep working.
+
+The empty `.nojekyll` at the root turns off Jekyll, which Pages would otherwise run
+over every push. Nothing here is written for Jekyll, and leaving it on only risks it
+deciding a file is Markdown when it is not.
+
+Pushing to `main` is therefore a deploy. The tests are the guard — `npm test` before
+you push, since nothing between you and the live site will catch a broken import.
 
 ## Tests
 
