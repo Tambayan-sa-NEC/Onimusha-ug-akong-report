@@ -88,6 +88,7 @@ styles/
   challenges.css        the widgets the mini-games build themselves from
   ending.css            the sumi-e victory cutscene
   pause.css             the pause screen, settings and controls
+  touch.css             the on-screen controls, and everything else a phone needs
 src/
   main.js               entry point: hands off to Game
   config/               tunable numbers and key bindings, nothing depends on anything
@@ -128,7 +129,7 @@ tests/                  the harness and fourteen suites
 | `systems/` | Cross-cutting per-frame concerns. `input.js` is the only module that touches the keyboard and mouse; everything else reads its state. |
 | `combat/` | `battle.js` is an ordinary fight; `bossBattle.js` extends it. `katana.js` and `kunai.js` are the two characters' weapons. |
 | `challenges/` | The flow that runs any challenge, the seal book, and ten independent mini-games. |
-| `ui/` | DOM only. No module outside `ui/` writes to the document. `ending.js` paints the sumi-e victory cutscene to a canvas when both bosses fall; `pause.js` holds the pause screen, the settings and the keymap editor; `compass.js` is the bearing strip that points at the yokai whose seals you have yet to win. |
+| `ui/` | DOM only. No module outside `ui/` writes to the document. `ending.js` paints the sumi-e victory cutscene to a canvas when both bosses fall; `pause.js` holds the pause screen, the settings and the keymap editor; `compass.js` is the bearing strip that points at the yokai whose seals you have yet to win; `touch.js` is the on-screen stick and buttons. |
 
 ## Three things worth knowing before changing code
 
@@ -170,6 +171,27 @@ runs mid-import, before its dependencies are ready.
 
 Every binding above can be changed from the pause screen, and is remembered between
 visits.
+
+### On a phone
+
+A touch device gets a stick under the left thumb and an action cluster under the
+right; drag the right of the screen to look around. The stick is analog, so a gentle
+push really is a slower walk, and pushing it out to the rim is the sprint — which is
+why there is no sprint button. It appears wherever your thumb lands rather than in a
+fixed corner your thumb cannot see underneath itself.
+
+The buttons hold no idea of their own about what anything means. They call the same
+`pressKey` the keyboard calls, so the menu, the pause screen, the ending and all ten
+mini-games answer a thumb without any of them knowing one is there — none of the
+games needed changing. The lantern memory game gained tappable lanterns, which is the
+one thing a stick and four buttons could not reach, and the riddle and the shell game
+were already tappable.
+
+The controls come up when the browser reports `(pointer: coarse)`, so a desktop with a
+touchscreen is left alone, and they can be switched off from the pause screen. The
+challenge panel says "Pause to forfeit" rather than naming a key the device has not
+got, and the title screen offers fullscreen, since browser chrome takes about a third
+of a phone screen.
 
 ## Assets
 

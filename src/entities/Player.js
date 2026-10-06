@@ -21,7 +21,7 @@ import { burst } from '../render/effects/sparks.js';
 import { orient } from '../render/materials.js';
 import { Sound } from '../systems/audio.js';
 import { cam } from '../systems/camera.js';
-import { acting, takeJump } from '../systems/input.js';
+import { acting, input, takeJump } from '../systems/input.js';
 import { $ } from '../utils/dom.js';
 import { clamp, damp } from '../utils/math.js';
 import { localPoint } from '../utils/sphere.js';
@@ -108,13 +108,15 @@ function updatePlayer(dt, t) {
     if (acting('back')) iz -= 1;
     if (acting('right')) ix += 1;
     if (acting('left')) ix -= 1;
+    ix += input.moveX; iz += input.moveZ;   // the on-screen stick, zero without one
   }
   // Camera-relative input on the tangent plane.
   cam.fwd.addScaledVector(up, -cam.fwd.dot(up)).normalize();
   _right.crossVectors(cam.fwd, up);
   _want.set(0, 0, 0).addScaledVector(cam.fwd, iz).addScaledVector(_right, ix);
-  if (_want.lengthSq() > 0) _want.normalize();
-  player.sprinting = acting('sprint') && _want.lengthSq() > 0;
+  // Only trim what is past full speed: a half-pushed stick is meant to be a slower walk.
+  if (_want.lengthSq() > 1) _want.normalize();
+  player.sprinting = (acting('sprint') || input.sprint) && _want.lengthSq() > 0;
   _want.multiplyScalar((player.sprinting ? CFG.sprint : CFG.walk) * player.char.speed);
 
   player.vel.addScaledVector(up, -player.vel.dot(up));             // keep velocity tangent

@@ -2,13 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- user-scalable=no stops a double tap zooming the game; viewport-fit=cover lets the
+     controls sit inside the notch insets rather than beside them. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#bcd9ea">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Onimusha — a tiny planet of samurai and yokai</title>
 <link rel="stylesheet" href="styles/base.css">
 <link rel="stylesheet" href="styles/hud.css">
 <link rel="stylesheet" href="styles/challenges.css">
 <link rel="stylesheet" href="styles/ending.css">
 <link rel="stylesheet" href="styles/pause.css">
+<link rel="stylesheet" href="styles/touch.css">
 <!-- An import map keeps the bare "three" specifier working in the browser with no build step.
      The same specifier resolves from node_modules when the tests run under Node. -->
 <script type="importmap">
@@ -21,16 +27,30 @@
 </head>
 <body>
 <div id="hint">
-  <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows to walk<br>
-  <kbd>Shift</kbd> sprint &nbsp; <kbd>Space</kbd> jump &nbsp; <kbd>E</kbd> talk<br>
-  <span id="hintAtk"></span><br>
-  Fierce yokai give chase — fight, outrun, or <kbd>E</kbd> to offer a game<br>
-  Five seals open the sealed gate on the far hill<br>
-  The strip above points the way to the yokai whose seals you still want<br>
-  Right-drag to look, wheel to zoom, <kbd>M</kbd> sound<br>
-  <kbd>Esc</kbd> pause — settings, controls, forfeit or quit
+  <span class="kbonly">
+    <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows to walk<br>
+    <kbd>Shift</kbd> sprint &nbsp; <kbd>Space</kbd> jump &nbsp; <kbd>E</kbd> talk<br>
+    <span id="hintAtk"></span><br>
+    Fierce yokai give chase — fight, outrun, or <kbd>E</kbd> to offer a game<br>
+    Five seals open the sealed gate on the far hill<br>
+    The strip above points the way to the yokai whose seals you still want<br>
+    Right-drag to look, wheel to zoom, <kbd>M</kbd> sound<br>
+    <kbd>Esc</kbd> pause — settings, controls, forfeit or quit
+  </span>
+  <span class="tponly">
+    Left thumb walks — push it right out to run<br>
+    Drag the right of the screen to look around<br>
+    <kbd>E</kbd> talk &nbsp; <kbd>⚔</kbd> attack &nbsp; <kbd>↑</kbd> jump &nbsp; <kbd>転</kbd> dodge<br>
+    Fierce yokai give chase — fight, outrun, or <kbd>E</kbd> to offer a game<br>
+    Five seals open the sealed gate on the far hill<br>
+    The strip above points the way to the yokai whose seals you still want<br>
+    <kbd>❙❙</kbd> pause — settings, controls, forfeit or quit
+  </span>
 </div>
 <div id="prompt"></div>
+<!-- The on-screen controls sit here, under everything you can tap: the mini-game
+     stage, the dialogue, the pause screen and the menu all paint above them. -->
+<div id="touch"></div>
 <div id="vitals"></div>
 <div id="seals" title="Yokai seals: win each yokai's challenge"></div>
 <div id="compass" title="Which way the yokai you still owe a seal are lying"></div>
@@ -47,6 +67,14 @@
     <div id="mTitle" class="mpage on"></div>
     <div id="mSelect" class="mpage"></div>
     <div id="mCredits" class="mpage"></div>
+  </div>
+</div>
+<div id="fs" title="Fullscreen">⛶</div>
+<div id="rotate">
+  <div class="rcard">
+    <div class="rturn">↻</div>
+    <p>This little planet is happier on its side.<br>Turn your phone sideways.</p>
+    <button id="rotateGo" class="mitem">Play as it is</button>
   </div>
 </div>
 <script type="module" src="src/main.js"></script>

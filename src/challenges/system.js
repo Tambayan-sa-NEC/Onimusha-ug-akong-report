@@ -15,7 +15,7 @@ import { errands, held, opened } from '../core/keepsakes.js';
 import { saveProgress } from '../core/save.js';
 import { openDialog } from '../ui/dialog.js';
 import { ending, playEnding } from '../ui/ending.js';
-import { $ } from '../utils/dom.js';
+import { $, coarse } from '../utils/dom.js';
 import { tangentA } from '../utils/scratch.js';
 
 const hosts = [];              // anything with def.game (yokai critters + yokai NPCs)
@@ -48,7 +48,8 @@ function startChallenge(host, g = GAMES[host.def.game]) {
   ch.active = c;
   host.busy = true;
   chUI.title.textContent = `${g.seal}  ${g.title}`;
-  chUI.how.textContent = `${g.how} Esc to forfeit.`;
+  // A phone has no Esc key, so it is pointed at the button it does have.
+  chUI.how.textContent = `${g.how} ${coarse() ? 'Pause to forfeit.' : 'Esc to forfeit.'}`;
   setStatus('');
   chUI.stage.innerHTML = '';
   chUI.panel.classList.add('show');

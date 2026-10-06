@@ -1,0 +1,115 @@
+/* The on-screen controls, and everything else a phone needs. */
+
+/* Only one set of instructions is true at a time. */
+.tponly { display: none; }
+body.touch .kbonly { display: none; }
+body.touch .tponly { display: inline; }
+
+/* No rubber-banding, no double-tap zoom, no blue flash on every button. */
+html, body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+body.touch { -webkit-user-select: none; user-select: none; }
+body.touch canvas, #touch { touch-action: none; }
+/* The pause screen is the one thing that may need to scroll on a short screen. */
+body.touch #pause { touch-action: pan-y; }
+
+/* ------------------------------- the controls ------------------------------- */
+
+/* No z-index on purpose: the mini-game stage, the dialogue and the menus all come
+   later in the markup and must stay above these zones, or a tap never reaches them. */
+#touch { position: fixed; inset: 0; display: none; }
+#touch.show { display: block; }
+
+/* Two halves: the left one walks, the right one looks. */
+.tzone { position: absolute; top: 0; bottom: 0; width: 50%; }
+.tmove { left: 0; }
+.tlook { right: 0; }
+
+/* The stick is drawn where the thumb landed, so it has no fixed place to find. */
+.tstick { position: absolute; width: 0; height: 0; opacity: 0; transition: opacity .12s; }
+.tstick.show { opacity: 1; }
+.tstick::before {
+  content: ''; position: absolute; left: -56px; top: -56px; width: 112px; height: 112px;
+  border: 2px solid rgba(250, 246, 238, .55); border-radius: 50%;
+  background: rgba(42, 37, 34, .14);
+}
+.tknob {
+  position: absolute; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%;
+  background: rgba(250, 246, 238, .82); box-shadow: 0 2px 10px rgba(70, 40, 30, .3);
+}
+
+.tbtn {
+  position: absolute; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--washi); border: 1px solid rgba(205, 188, 168, .8);
+  box-shadow: var(--panel-shadow); color: var(--sumi); font-size: 22px; line-height: 1;
+  transition: transform .08s, opacity .15s;
+}
+.tbtn.on { transform: scale(.9); background: var(--shu); color: #fff4ec; }
+/* Dimmed, not hidden: a locked mini-game has no use for a blade, but the button
+   staying put means nothing moves under your thumb mid-game. */
+.tbtn.off { opacity: .25; pointer-events: none; }
+
+.tatk { right: calc(26px + env(safe-area-inset-right)); bottom: calc(26px + env(safe-area-inset-bottom));
+  width: 76px; height: 76px; font-size: 28px; }
+.tjump { right: calc(110px + env(safe-area-inset-right)); bottom: calc(44px + env(safe-area-inset-bottom));
+  width: 60px; height: 60px; }
+.te { right: calc(36px + env(safe-area-inset-right)); bottom: calc(114px + env(safe-area-inset-bottom));
+  width: 60px; height: 60px; font-size: 19px; }
+.tsp { right: calc(114px + env(safe-area-inset-right)); bottom: calc(130px + env(safe-area-inset-bottom));
+  width: 56px; height: 56px; font-size: 20px; }
+.tpause { left: calc(14px + env(safe-area-inset-left)); top: calc(14px + env(safe-area-inset-top));
+  width: 44px; height: 44px; font-size: 15px; letter-spacing: 1px; }
+
+/* ------------------------- making room for the controls ------------------------- */
+
+/* The pause button takes the corner the hint card used to have to itself. */
+body.touch #hint { left: calc(68px + env(safe-area-inset-left)); top: calc(14px + env(safe-area-inset-top));
+  font-size: 11.5px; line-height: 1.65; max-width: 58vw; }
+body.touch #vitals { left: calc(14px + env(safe-area-inset-left)); bottom: calc(14px + env(safe-area-inset-bottom)); }
+body.touch #seals { right: calc(12px + env(safe-area-inset-right)); top: calc(12px + env(safe-area-inset-top)); }
+body.touch #compass { top: calc(12px + env(safe-area-inset-top)); }
+/* Hovering is not a thing a finger does, so these only swallowed drags. */
+body.touch #seals, body.touch #compass .cmark { pointer-events: none; }
+/* The prompt sits above the action cluster rather than behind it. */
+body.touch #prompt { bottom: calc(200px + env(safe-area-inset-bottom)); }
+/* The dialogue box clears the buttons on the right. */
+body.touch #dialog { width: min(600px, 74vw); left: 42%; bottom: 20px; }
+
+/* Panels have to fit a short screen, and the pause screen has a lot to say. */
+@media (max-height: 460px) {
+  body.touch .pcard { max-height: 88vh; overflow-y: auto; }
+  body.touch #chPanel { padding: 7px 12px 8px; width: min(440px, 54vw); }
+  body.touch #chTitle { font-size: 15px; }
+  body.touch #chHow { font-size: 11px; line-height: 1.35; }
+  body.touch #chStatus { font-size: 13px; margin-top: 3px; }
+  body.touch #bossBar { top: 62px; }
+  body.touch .card { padding: 16px 22px 14px; }
+  body.touch .card h1 { font-size: 23px; }
+  body.touch #picks { gap: 8px; }
+  body.touch .pick { width: 170px; padding: 10px 9px 11px; }
+  body.touch .pview { width: 86px; height: 92px; }
+  body.touch .pdesc { display: none; }   /* the stat block already says the difference */
+}
+
+/* --------------------------------- fullscreen --------------------------------- */
+
+/* Browser chrome takes roughly a third of a phone screen; this asks for it back. */
+#fs { position: fixed; right: calc(14px + env(safe-area-inset-right)); bottom: calc(14px + env(safe-area-inset-bottom));
+  width: 46px; height: 46px; display: none; align-items: center; justify-content: center;
+  background: var(--washi); border: 1px solid rgba(205, 188, 168, .8); border-radius: 50%;
+  box-shadow: var(--panel-shadow); font-size: 20px; color: var(--sumi); z-index: 6; }
+#fs.show { display: flex; }
+
+/* ------------------------------- turn it sideways ------------------------------- */
+
+/* Suggested, never forced: the overlay can be dismissed and does not come back. */
+#rotate { position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+  background: rgba(188, 217, 234, .97); z-index: 60; text-align: center; }
+@media (orientation: portrait) {
+  body.touch:not(.norotate) #rotate { display: flex; }
+}
+.rcard { padding: 26px 30px; }
+.rturn { font-size: 54px; color: var(--shu); animation: rtilt 2.4s ease-in-out infinite; }
+.rcard p { font-size: 15px; line-height: 1.7; margin: 14px 0 18px; opacity: .85; }
+@keyframes rtilt { 0%, 100% { transform: rotate(-16deg); } 50% { transform: rotate(74deg); } }
+/* Nobody needs a spinning arrow to be told this. */
+@media (prefers-reduced-motion: reduce) { .rturn { animation: none; } }

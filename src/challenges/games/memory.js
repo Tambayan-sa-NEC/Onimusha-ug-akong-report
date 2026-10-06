@@ -3,10 +3,15 @@ import { LAN_NOTES } from '../../data/quiz.js';
 import { Sound } from '../../systems/audio.js';
 
 const memory = { seal: '灯', title: 'Lantern memory', locks: true,
-  how: 'Watch the lanterns light up, then repeat the order with WASD or the arrow keys. 3 rounds.',
+  how: 'Watch the lanterns light up, then repeat the order — tap them, or use WASD and the arrow keys. 3 rounds.',
   start(c) {
     const grid = el('div', 'lanterns', undefined, el('div', 'panel', undefined, chUI.stage));
-    c.lan = ['↑', '←', '→', '↓'].map((s, i) => el('div', 'lan l' + i, s, grid));
+    c.lan = ['↑', '←', '→', '↓'].map((s, i) => {
+      const lantern = el('div', 'lan l' + i, s, grid);
+      // Tappable as well as keyed, the way the riddle and the shell game already are.
+      lantern.addEventListener('pointerdown', ev => { ev.preventDefault(); memory.press(c, i); });
+      return lantern;
+    });
     c.round = 0; c.seq = []; c.lit = [0, 0, 0, 0];
     memory.next(c);
   },
@@ -28,7 +33,11 @@ const memory = { seal: '灯', title: 'Lantern memory', locks: true,
   },
   key(c, code) {
     const i = { KeyW: 0, ArrowUp: 0, KeyA: 1, ArrowLeft: 1, KeyD: 2, ArrowRight: 2, KeyS: 3, ArrowDown: 3 }[code];
-    if (i === undefined || c.phase !== 'input') return;
+    if (i !== undefined) memory.press(c, i);
+  },
+  /** One lantern chosen, by key or by thumb. */
+  press(c, i) {
+    if (c.phase !== 'input') return;
     memory.flash(c, i);
     if (i !== c.seq[c.pos]) { c.result = 'lose'; c.note = 'Wrong lantern!'; return; }
     if (++c.pos === c.seq.length) {

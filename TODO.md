@@ -305,12 +305,23 @@ My suggestions, not from your list. Pick up or discard freely.
 - [ ] **More mini-games, or difficulty tiers for the existing ten.** The challenge
       framework in `challenges/` already supports this cleanly — `GAMES` and
       `GAME_ORDER` in `challenges/games/index.js` are the seam.
+- [x] **Playable on a phone.** *Done — `ui/touch.js` and `styles/touch.css`. An analog
+      stick under the left thumb, an action cluster under the right, the right of the
+      screen given over to looking. The buttons call the same `pressKey` the keyboard
+      calls, so nothing in `challenges/` had to learn that a thumb exists; the lantern
+      memory game gained tappable lanterns, which was the one thing a stick and four
+      buttons could not reach. Shown on `(pointer: coarse)` only, so a touchscreen
+      laptop is left alone, and switchable from the pause screen. Covered by
+      `tests/touch.test.js`.*
+      **Still open:** never run on real hardware — the suite proves the wiring, not
+      how any of it feels under a thumb. Thumb reach, button size and whether the
+      stick drifts on a long walk all want a real phone and a real hand.
 
 ---
 
 ## Working notes
 
-- Tests: `npm test` — 286 checks across sixteen suites. Run before and after each feature.
+- Tests: `npm test` — 304 checks across seventeen suites. Run before and after each feature.
 - `node --experimental-vm-modules tests/rebaseline.js` shows what moved in the world;
   only `--write` rewrites the baseline.
 - `tests/world.test.js` failing after a world change is expected; regenerate

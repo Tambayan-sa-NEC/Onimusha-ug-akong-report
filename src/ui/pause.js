@@ -112,6 +112,7 @@ function renderSettings(box) {
   checkbox(box, 'Larger text', 'largeText', v => applyLargeText(v));
   checkbox(box, 'Day and night', 'dayNight', () => applyDaylight());
   checkbox(box, 'Compass', 'compass');
+  checkbox(box, 'Touch controls', 'touchControls');
 
   button(box, 'Reset to defaults', 'pbtn', () => {
     for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) CFG[k] = v;

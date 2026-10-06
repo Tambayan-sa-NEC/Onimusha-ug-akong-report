@@ -86,7 +86,7 @@ function seedMathRandom(seed) {
 /* --------------------------------- the boot --------------------------------- */
 
 /** Start the game in a fresh module graph. Returns a handle for driving and inspecting it. */
-export async function boot({ randomSeed = 7 } = {}) {
+export async function boot({ randomSeed = 7, coarsePointer = false } = {}) {
   seedMathRandom(randomSeed);
 
   const elements = new Map();
@@ -130,6 +130,10 @@ export async function boot({ randomSeed = 7 } = {}) {
     requestAnimationFrame(cb) { pending = cb; return 1; },
     cancelAnimationFrame() { pending = null; },
     devicePixelRatio: 1,
+    // Enough of a device for the touch layer to make up its mind about.
+    navigator: { maxTouchPoints: coarsePointer ? 5 : 0, userAgent: 'node' },
+    matchMedia: q => ({ matches: coarsePointer && /coarse/.test(q), media: q,
+      addEventListener() {}, removeEventListener() {} }),
     localStorage,
     innerWidth: 1280,
     innerHeight: 720,
@@ -141,6 +145,8 @@ export async function boot({ randomSeed = 7 } = {}) {
       body: new El('body'),
       getElementById: getEl,
       createElement: tag => new El(tag),
+      documentElement: new El('html'),
+      fullscreenElement: null,
       addEventListener: on,
       removeEventListener() {},
     },

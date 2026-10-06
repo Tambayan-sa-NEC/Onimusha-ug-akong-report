@@ -2,10 +2,13 @@
  * Renderer, scene, camera and lights — the three.js plumbing, and nothing else.
  */
 import * as THREE from 'three';
+import { coarse } from '../utils/dom.js';
 
 const SKY = new THREE.Color('#bcd9ea');
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+// A phone reports a pixel ratio of 3 and has a fraction of the fill rate to go with
+// it, so it is capped lower there. Desktop is unchanged.
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, coarse() ? 1.25 : 1.75));
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.prepend(renderer.domElement);
 

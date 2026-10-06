@@ -9,6 +9,7 @@ import { playerHP } from '../combat/battle.js';
 import { session } from '../core/Session.js';
 import { initCompass, updateCompass } from './compass.js';
 import { ending } from './ending.js';
+import { initTouch, updateTouch } from './touch.js';
 import { $ } from '../utils/dom.js';
 
 /** Seconds of play before the controls card bows out, having said its piece. */
@@ -62,6 +63,7 @@ function updateHud(dt) {
   ui.seals.classList.toggle('away', ending.active);
   paintVitals();
   updateCompass();
+  updateTouch();
 }
 
 /** Grab the elements once, before the first frame. */
@@ -72,6 +74,7 @@ function initHud() {
   hud.played = 0;
   hud.drawn = '';
   initCompass();
+  initTouch();
   paintVitals();
 }
 

@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS = {
   largeText: false,      // bigger dialogue and prompts
   dayNight: true,        // the four-minute day/night cycle; off holds the sky at noon
   compass: true,         // the bearing strip pointing at the yokai you still owe
+  touchControls: true,   // the on-screen stick and buttons, on a device with no keyboard
 };
 
 const CFG = {
